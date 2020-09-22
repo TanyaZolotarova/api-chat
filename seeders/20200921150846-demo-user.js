@@ -6,7 +6,6 @@ module.exports = {
         await queryInterface.bulkInsert('users', [
             {
                 user_name: 'John Doe',
-                email: 'test@email',
                 password: 'password',
                 role: false,
                 createdAt: new Date(),
@@ -14,7 +13,6 @@ module.exports = {
             },
             {
                 user_name: 'John Doe 2 ',
-                email: 'test@email2',
                 password: 'password',
                 role: true,
                 createdAt: new Date(),

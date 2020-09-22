@@ -5,10 +5,12 @@ const app = express();
 const dotenv = require('dotenv');
 dotenv.config();
 
+const users = require('./routes/userRoutes')
+
 app.use(bodyParser.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use('/users', users);
 
 app.get('/', (req, res) => {
     res.json({message: 'welcome to application.'})
