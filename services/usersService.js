@@ -4,7 +4,6 @@ const user = db.user;
 const jwt = require("jsonwebtoken");
 const config = require('../config/auth.config.js');
 
-
 const createUser = (data) => {
     const createUser = user.build();
 
@@ -45,9 +44,8 @@ const authUser =  async ({name, password}) => {
         );
 
         if (!passwordIsValid) {
-            return {
-                message: "Invalid Password!"
-            };
+
+            return false;
         }
 
         return {
@@ -55,15 +53,15 @@ const authUser =  async ({name, password}) => {
             token : await generateToken(findUser.id),
         };
 
-    } else {
+    }
 
-        const user = await createUser({name, password});
+        const newUser = await createUser({name, password});
         return {
-            user: { id: user.id, name: user.name},
-            token: await generateToken(user.id),
+            user: { id: newUser.id, name: newUser.name},
+            token: await generateToken(newUser.id),
         };
 
-    }
+
 
 }
 module.exports = {

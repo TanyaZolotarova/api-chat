@@ -30,10 +30,11 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-db.user.hasMany(db.message, {as: 'messages'});
-db.message.belongsTo(db.user, {
-  foreignKey: 'user_id',
-  as: 'users',
-});
+
+// db.user.hasMany(db.message, {as: 'messages'});
+// db.message.belongsTo(db.user, {
+//   foreignKey: 'user_id',
+//   as: 'users',
+// });
 
 module.exports = db;
