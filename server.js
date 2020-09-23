@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 const dotenv = require('dotenv');
 dotenv.config();
+const userRouter = require('./routes/userRoutes');
 
 const users = require('./routes/userRoutes')
 
@@ -15,6 +16,8 @@ app.use('/users', users);
 app.get('/', (req, res) => {
     res.json({message: 'welcome to application.'})
 });
+
+app.use('/users', userRouter);
 
 // set port, listen for request
 const PORT = process.env.PORT || 3000;
