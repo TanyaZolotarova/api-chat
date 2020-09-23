@@ -12,8 +12,9 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-app.get('/', (req, res) => {
-    res.json({message: 'welcome to application.'})
+// Middle ware registration
+app.get('/', (req, res) => {     // req - all  res -
+  res.json({message: 'welcome to application.'})
 });
 
 app.use('/auth', authRouter);
@@ -25,5 +26,19 @@ app.listen(PORT, () => {
 
 })
 
+
+// socket.io
+const httpServer = require('http').createServer((req, res) => {
+  // serve the index.html file
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Content-Length', Buffer.byteLength(content));
+  res.end(content);
+});
+
+const io = require('socket.io')(httpServer);
+
+io.on('connect', socket => {
+  console.log('connect');
+});
 
 
