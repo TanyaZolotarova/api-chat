@@ -7,17 +7,37 @@ dotenv.config();
 
 const users = require('./routes/userRoutes')
 
-app.use(bodyParser.json());
 app.use(cors());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 app.use('/users', users);
 
 app.get('/', (req, res) => {
     res.json({message: 'welcome to application.'})
 });
 
+
 // set port, listen for request
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Example app listening at http://localhost:${PORT}`)
+  console.log(` Server is running on port http://localhost:${PORT}`)
+
 })
+
+
+// socket.io
+const httpServer = require('http').createServer((req, res) => {
+  // serve the index.html file
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Content-Length', Buffer.byteLength(content));
+  res.end(content);
+});
+
+const io = require('socket.io')(httpServer);
+
+io.on('connect', socket => {
+  console.log('connect');
+});
+
+httpServer.listen(3000, () => {
+  console.log('go to http://localhost:3000');
+});

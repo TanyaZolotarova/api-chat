@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      user_name: {
+      name: {
         type: Sequelize.STRING,
         unique: true
       },
@@ -18,6 +18,7 @@ module.exports = {
 
       role: {
         type: Sequelize.STRING,
+        default: 'user'
       },
 
       createdAt: {

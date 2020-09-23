@@ -4,7 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
-const config = require(__dirname + '/../config/config.js');
+const config = require(__dirname + '../../config/config.js')
+
+
 
 const db = {};
 
@@ -30,7 +32,7 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.user.hasMany(db.message, {as: 'messages'});
 db.message.belongsTo(db.user, {
-  foreignKey: 'userId',
+  foreignKey: 'user_id',
   as: 'users',
 });
 
