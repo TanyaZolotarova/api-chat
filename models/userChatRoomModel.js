@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     };
 
     user_chat_room.init({
-        user_id: DataTypes.INTEGER,
+        userId: DataTypes.INTEGER,
         muted: DataTypes.BOOLEAN,
         bunned: DataTypes.BOOLEAN,
         chatroom_id: DataTypes.INTEGER

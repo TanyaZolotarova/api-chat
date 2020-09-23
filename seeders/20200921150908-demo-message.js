@@ -6,14 +6,14 @@ module.exports = {
     await queryInterface.bulkInsert('messages', [
             {
                 message: 'Test message',
-                user_id: 1,
+                userId: 1,
                 chatroom_id: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
             {
                 message: 'Test message 2',
-                user_id: 2,
+                userId: 2,
                 chatroom_id: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()

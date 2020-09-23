@@ -21,5 +21,10 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'user',
   });
+
+  user.associate = function(models) {
+    user.hasMany(models.message, { as: 'messages'})
+  };
+
   return user;
 };
