@@ -11,7 +11,7 @@ module.exports = {
       message: {
         type: Sequelize.TEXT
       },
-      user_id: {
+      userId: {
         type: Sequelize.INTEGER
       },
       chatroom_id: {
