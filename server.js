@@ -1,38 +1,45 @@
-const app = require('./app');
-const server = require('http').createServer(app);
-const io = require('socket.io').listen(server);
+const express = require('express')
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const app = express();
+const dotenv = require('dotenv');
+dotenv.config();
+const userRouter = require('./routes/userRoutes');
 
+const users = require('./routes/userRoutes')
 
-// Listen port
-server.listen(process.env.PORT, () => {
-    console.log(`Example app listening at http://localhost:${process.env.PORT}`);
+app.use(cors());
+app.use(bodyParser.json());
+app.use('/users', users);
+
+app.get('/', (req, res) => {
+    res.json({message: 'welcome to application.'})
 });
 
-// Array with connections
-connections = [];
+app.use('/users', userRouter);
 
-// == SYSTEM EVENT ==  Function, which runs when connecting client;
-io.sockets.on('connection', function (socket) {
-    console.log("Connected successfully");
-    // Adding new connection into array;
-    connections.push(socket);
+// set port, listen for request
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(` Server is running on port http://localhost:${PORT}`)
 
-
-    // == CUSTOM EVENT ==  Function, receiving a message from any client;
-    socket.on('message', function ({name, message}) {
-        console.log('====[ send_message ]==========>', name +':', message);
-        // Inside of the function we sending an event 'add_message',
-        // which will show up a new message for all connected clients;
-        io.sockets.emit('add_message', {name, message});
-    });
+})
 
 
-    // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
-    socket.on('disconnect', function (data) {
-        // Removing an user from array of 'connections';
-        connections.splice(connections.indexOf(socket), 1);
-        console.log("Disconnected");
-    });
+// socket.io
+const httpServer = require('http').createServer((req, res) => {
+  // serve the index.html file
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Content-Length', Buffer.byteLength(content));
+  res.end(content);
+});
 
+const io = require('socket.io')(httpServer);
 
+io.on('connect', socket => {
+  console.log('connect');
+});
+
+httpServer.listen(3000, () => {
+  console.log('go to http://localhost:3000');
 });

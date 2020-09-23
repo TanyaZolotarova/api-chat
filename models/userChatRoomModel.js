@@ -3,19 +3,20 @@
 const {Model} = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class Message extends Model {
+    class user_chat_room extends Model {
         static associate(models) {
             // define association here
         }
     };
 
-    Message.init({
-        message: DataTypes.TEXT,
+    user_chat_room.init({
         user_id: DataTypes.INTEGER,
-        chatroom_id: DataTypes.INTEGER,
+        muted: DataTypes.BOOLEAN,
+        bunned: DataTypes.BOOLEAN,
+        chatroom_id: DataTypes.INTEGER
     }, {
         sequelize,
-        modelName: 'Message',
+        modelName: 'user_chat_room',
     });
-    return Message;
+    return user_chat_room;
 };

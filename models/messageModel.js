@@ -3,18 +3,19 @@
 const {Model} = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class Chat_room extends Model {
+    class message extends Model {
         static associate(models) {
             // define association here
         }
     };
-    Chat_room.init({
-        is_group_chat: DataTypes.BOOLEAN,
-        chat_name: DataTypes.STRING,
-        creator_id: DataTypes.INTEGER
+
+    message.init({
+        message: DataTypes.TEXT,
+        user_id: DataTypes.INTEGER,
+        chatroom_id: DataTypes.INTEGER,
     }, {
         sequelize,
-        modelName: 'Chat_room',
+        modelName: 'message',
     });
-    return Chat_room;
+    return message;
 };
