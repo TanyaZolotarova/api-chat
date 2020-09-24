@@ -4,6 +4,25 @@ const user = db.user;
 const jwt = require("jsonwebtoken");
 const config = require('../config/auth.config.js');
 
+const getAll = () => {
+    return user.findAll({
+        attributes: ['email', 'role', 'nickname']
+    });
+}
+
+const getUser = (id) => {
+    return user.findByPk(id, {
+        attributes: ['email', 'role', 'nickname']
+
+    });
+}
+
+const deleteUser = (id) => {
+ return user.findByPk(id);
+}
+
+
+
 const createUser = (data) => {
     const createUser = user.build();
 
@@ -64,8 +83,16 @@ const authUser =  async ({email, password}) => {
 
 
 }
+
+
+
+
+
 module.exports = {
     createUser,
     loginUser,
-    authUser
+    authUser,
+    getUser,
+    getAll,
+    deleteUser,
 }

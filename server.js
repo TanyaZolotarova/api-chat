@@ -5,6 +5,7 @@ const app = express();
 const dotenv = require('dotenv');
 dotenv.config();
 const authRouter = require('./routes/authRoutes');
+const usersRouter = require('./routes/usersRoutes');
 
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
@@ -18,6 +19,7 @@ app.get('/', (req, res) => {     // req - all  res -
 });
 
 app.use('/auth', authRouter);
+app.use('/users', usersRouter);
 
 
 // Listen port

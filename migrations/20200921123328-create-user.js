@@ -20,6 +20,10 @@ module.exports = {
         type: Sequelize.STRING,
         default: 'user'
       },
+       nickname: {
+        type: Sequelize.STRING,
+        unique: true
+      },
 
       createdAt: {
         allowNull: false,
