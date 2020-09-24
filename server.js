@@ -6,11 +6,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 const authRouter = require('./routes/authRoutes');
 
-const users = require('./routes/authRoutes')
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
 
 app.use(cors());
 app.use(bodyParser.json());
-
 
 // Middle ware registration
 app.get('/', (req, res) => {     // req - all  res -
@@ -19,26 +19,40 @@ app.get('/', (req, res) => {     // req - all  res -
 
 app.use('/auth', authRouter);
 
-// set port, listen for request
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(` Server is running on port http://localhost:${PORT}`)
 
-})
-
-
-// socket.io
-const httpServer = require('http').createServer((req, res) => {
-  // serve the index.html file
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Content-Length', Buffer.byteLength(content));
-  res.end(content);
+// Listen port
+server.listen(process.env.PORT, () => {
+  console.log(`Example app listening at http://localhost:${process.env.PORT}`);
 });
 
-const io = require('socket.io')(httpServer);
+// Array with connections
+connections = [];
 
-io.on('connect', socket => {
-  console.log('connect');
+// == SYSTEM EVENT ==  Function, which runs when connecting client;
+io.sockets.on('connection', function (socket) {
+  console.log("Connected successfully");
+  // Adding new connection into array;
+  connections.push(socket);
+
+
+  // == CUSTOM EVENT ==  Function, receiving a message from any client;
+  socket.on('message', function ({name, message}) {
+    console.log('====[ send_message ]==========>', name +':', message);
+    // Inside of the function we sending an event 'add_message',
+    // which will show up a new message for all connected clients;
+    io.sockets.emit('add_message', {name, message});
+  });
+
+
+  // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
+  socket.on('disconnect', function (data) {
+    // Removing an user from array of 'connections';
+    connections.splice(connections.indexOf(socket), 1);
+    console.log("Disconnected");
+  });
+
+
 });
+
 
 
