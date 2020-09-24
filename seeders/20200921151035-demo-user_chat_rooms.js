@@ -5,7 +5,6 @@ module.exports = {
 
         await queryInterface.bulkInsert('user_chat_rooms', [
             {
-                userId: 1,
                 muted: false,
                 bunned: false,
                 chatroom_id: 1,
@@ -13,7 +12,6 @@ module.exports = {
                 updatedAt: new Date()
             },
             {
-                userId: 2,
                 muted: true,
                 bunned: true,
                 chatroom_id: 1,
