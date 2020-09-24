@@ -17,9 +17,9 @@ const getUser = (id) => {
     });
 }
 
-const deleteUser = (id) => {
- return user.findByPk(id);
-}
+// const deleteUser = (id) => {
+//  return user.findByPk(id);
+// }
 
 
 
@@ -94,5 +94,5 @@ module.exports = {
     authUser,
     getUser,
     getAll,
-    deleteUser,
+    // deleteUser,
 }

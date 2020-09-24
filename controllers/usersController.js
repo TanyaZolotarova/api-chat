@@ -35,27 +35,27 @@ exports.findOne = async (req, res) => {
 
 }
 
-exports.delete = async (req, res) => {
-    const id = req.params.id;
-
-    try{
-    const user = await deleteUser(id)
-        (num => {
-        if (num === 1) {
-            res.send({
-                message: 'User was deleted successfully!'
-            })
-        } else {
-            res.send({
-                message: `Cannot delete User with id=${id}`
-            })
-        }
-    }) catch (err) {
-        res.status(422).send({
-              message: `Cannot delete User with id=${id}`
-        });
-    }
-}}
+// exports.delete = async (req, res) => {
+//     const id = req.params.id;
+//
+//     try{
+//     const user = await deleteUser(id)
+//         (num => {
+//         if (num === 1) {
+//             res.send({
+//                 message: 'User was deleted successfully!'
+//             })
+//         } else {
+//             res.send({
+//                 message: `Cannot delete User with id=${id}`
+//             })
+//         }
+//     }) catch (err) {
+//         res.status(422).send({
+//               message: `Cannot delete User with id=${id}`
+//         });
+//     }
+// }}
 
 // exports.logout =  (req, res) => {
 //     User.findOne({

@@ -12,6 +12,11 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true
       },
+      googleId: {
+        allowNull: true,
+        unique: true,
+        type: Sequelize.STRING,
+      },
       password: {
         type: Sequelize.STRING
       },
@@ -20,7 +25,7 @@ module.exports = {
         type: Sequelize.STRING,
         default: 'user'
       },
-       nickname: {
+       name: {
         type: Sequelize.STRING,
         unique: true
       },
