@@ -13,7 +13,7 @@ module.exports = async (req, res, next) => {
         const userMe =  await user.findOne({
             where: {id},
             attributes: [
-                'name',
+                'email',
                 'role'
             ]
 
