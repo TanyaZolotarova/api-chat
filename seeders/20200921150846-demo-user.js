@@ -5,21 +5,21 @@ module.exports = {
 
         await queryInterface.bulkInsert('users', [
             {
-                name: 'John Doe',
+                email: 'John@lorem.com',
                 password: 'password',
                 role: 'user',
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
             {
-                name: 'admin',
+                email: 'admin@admin.com',
                 password: 'admin',
                 role: 'admin',
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
             {
-                name: 'John Doe 2 ',
+                email: 'lorem@ipsum.com ',
                 password: 'password',
                 role: 'user',
                 createdAt: new Date(),

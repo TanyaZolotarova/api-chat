@@ -1,7 +1,7 @@
 const { authUser } = require("../services/usersService");
 
 exports.login = async (req, res) => {
-        if(!req.body.name || !req.body.password ){
+        if(!req.body.email || !req.body.password ){
             return res.status(422).send({
                     message: "Invalid Data!"
                 });
