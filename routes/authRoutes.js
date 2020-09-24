@@ -4,12 +4,7 @@ const auth = require('../middleware/auth');
 const passport = require("passport");
 
 
-// router.get('/', users.findAll);
 router.post('/', authController.login);
-// router.delete('/:id', users.delete);
-// router.post('/logout', users.logout);
-// router.put('/:id/update', users.update);
-
 router.get('/me', auth, authController.me);
 
 // Google
