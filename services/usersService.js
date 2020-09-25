@@ -6,31 +6,37 @@ const config = require('../config/auth.config.js');
 
 const getAll = () => {
     return user.findAll({
-        attributes: ['email', 'role', 'nickname']
+        attributes: ['email', 'role', 'name']
     });
 }
 
 const getUser = (id) => {
     return user.findByPk(id, {
-        attributes: ['email', 'role', 'nickname']
-
+        attributes: ['email', 'role', 'name']
     });
 }
 
-// const deleteUser = (id) => {
-//  return user.findByPk(id);
-// }
+const deleteUser = (id) => {
+    return user.destroy({ where: {id}});
+}
 
 
+const updateUser = async (id, data) => {
+
+   const  upUser = await user.findByPk(id);
+   return upUser.update(data);
+}
 
 const createUser = (data) => {
     const createUser = user.build();
 
     createUser.password = bcrypt.hashSync(data.password, 8);
     createUser.email = data.email;
+    createUser.name = data.email.split('@')[0];
 
     return createUser.save();
 };
+
 
 const loginUser = (user) => {
     // const expiresIn = 24 * 60 * 60  // in seconds 24 hours;
@@ -49,7 +55,7 @@ const generateToken = (id) => {
     });
 }
 
-const authUser =  async ({email, password}) => {
+const authUser =  async ({email, password }) => {
 
     const findUser = await user.findOne({
         where: {email}
@@ -68,24 +74,23 @@ const authUser =  async ({email, password}) => {
         }
 
         return {
-            user: { id: findUser.id, email: findUser.email},
+            user: { id: findUser.id,
+                email: findUser.email,
+                name: findUser.name,
+                role: findUser.role,
+                bunned: findUser.bunned,
+                muted: findUser.muted},
             token : await generateToken(findUser.id),
         };
 
     }
 
-        const newUser = await createUser({email, password});
+        const newUser = await createUser({email, password });
         return {
-            user: { id: newUser.id, email: newUser.email},
+            user: { id: newUser.id, email: newUser.email, name: newUser.name },
             token: await generateToken(newUser.id),
         };
-
-
-
 }
-
-
-
 
 
 module.exports = {
@@ -94,5 +99,6 @@ module.exports = {
     authUser,
     getUser,
     getAll,
-    // deleteUser,
+    deleteUser,
+    updateUser,
 }
