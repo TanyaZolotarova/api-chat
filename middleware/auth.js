@@ -5,19 +5,28 @@ const {secret} = require('../config/auth.config');
 const jwt = require('jsonwebtoken');
 
 module.exports = async (req, res, next) => {
+
+
     try {
         const token = req.headers.authorization;
         const decodedToken = jwt.decode(token, secret);
         const id = decodedToken.id;
+        const data = {token};
 
         const userMe =  await user.findOne({
             where: {id},
             attributes: [
-                'name',
-                'role'
+                'email',
+                'role',
             ]
-
         })
+
+
+        // if (userMe.attributes.bunned === true) {
+        //     res.status(422).json({
+        //         error: 'You are bunned'
+        //     });
+        // }
 
         if (!userMe) {
             res.status(401).json({

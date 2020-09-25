@@ -57,6 +57,9 @@ io.sockets.on('connection', function (socket) {
     console.log("Connected successfully");
     // Adding new connection into array;
     connections.push(socket);
+    console.log("Connected successfully"+new Date().toTimeString());
+    // Adding new connection into array;
+    connections.push(socket);
 
 
     // == CUSTOM EVENT ==  Function, receiving a message from any client;
@@ -66,6 +69,13 @@ io.sockets.on('connection', function (socket) {
         // which will show up a new message for all connected clients;
         io.sockets.emit('add_message', {name, message});
     });
+    // == CUSTOM EVENT ==  Function, receiving a message from any client;
+    socket.on('message', function ({name, id, text}) {
+
+        // Inside of the function we sending an event 'add_message',
+        // which will show up a new message for all connected clients;
+        io.sockets.emit('add_message', {name, id, text});
+    });
 
 
     // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
@@ -73,6 +83,12 @@ io.sockets.on('connection', function (socket) {
         // Removing an user from array of 'connections';
         connections.splice(connections.indexOf(socket), 1);
         console.log("Disconnected");
+    });
+    // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
+    socket.on('disconnect', function (data) {
+        // Removing an user from array of 'connections';
+        connections.splice(connections.indexOf(socket), 1);
+        console.log("Disconnected"+new Date().toTimeString());
     });
 
 
