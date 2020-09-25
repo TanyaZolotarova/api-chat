@@ -17,14 +17,14 @@ const getUser = (id) => {
 }
 
 const deleteUser = (id) => {
-    return user.destroy({ where: {id}});
+    return user.destroy({where: {id}});
 }
 
 
 const updateUser = async (id, data) => {
 
-   const  upUser = await user.findByPk(id);
-   return upUser.update(data);
+    const upUser = await user.findByPk(id);
+    return upUser.update(data);
 }
 
 const createUser = (data) => {
@@ -56,63 +56,63 @@ const generateToken = (id) => {
     });
 }
 
-const authUserByGoogle =  async (data) => {
+const authUserByGoogle = async (data) => {
 
     const findUser = await user.findOne({
-                where: {googleId: data.googleId}
-   });
+        where: {googleId: data.googleId}
+    });
 
     if (findUser) {
         return {
-            user: { id: findUser.id, name: findUser.name},
-            token : await generateToken(findUser.id),
+            user: {id: findUser.id, name: findUser.name},
+            token: await generateToken(findUser.id),
         };
     }
 
     const newUser = await createUser(data);
     return {
-        user: { id: newUser.id, name: newUser.name},
+        user: {id: newUser.id, name: newUser.name},
         token: await generateToken(newUser.id),
     };
 
 }
 
-const authUser =  async ({name, password}) => {
-const authUser =  async ({email, password }) => {
+const authUser = async ({name, password}) => {
+    const authUser = async ({email, password}) => {
 
-    const findUser = await user.findOne({
-        where: {email}
-    });
+        const findUser = await user.findOne({
+            where: {email}
+        });
 
-    if (findUser) {
-        if (findUser.googleId){
-            return false;
+        if (findUser) {
+            if (findUser.googleId) {
+                return false;
+            }
+
+            //login
+            const passwordIsValid = bcrypt.compareSync(
+                password,
+                findUser.password
+            );
+
+            if (!passwordIsValid) {
+                return false;
+            }
+
+            return {
+                user: {id: findUser.id, name: findUser.name},
+                token: await generateToken(findUser.id),
+            };
+
         }
 
-        //login
-        const passwordIsValid = bcrypt.compareSync(
-            password,
-            findUser.password
-        );
-
-        if (!passwordIsValid) {
-            return false;
-        }
-
+        const newUser = await createUser({email, password});
         return {
-            user: { id: findUser.id, name: findUser.name},
-            token : await generateToken(findUser.id),
-        };
-
-    }
-
-        const newUser = await createUser({email, password });
-        return {
-            user: { id: newUser.id, name: newUser.name},
+            user: {id: newUser.id, name: newUser.name},
             token: await generateToken(newUser.id),
         };
 
-
+    }
 
 }
 module.exports = {
