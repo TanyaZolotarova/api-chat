@@ -17,22 +17,23 @@ const getUser = (id) => {
 }
 
 const deleteUser = (id) => {
-    return user.destroy({ where: {id}});
+    return user.destroy({where: {id}});
 }
 
 
 const updateUser = async (id, data) => {
 
-   const  upUser = await user.findByPk(id);
-   return upUser.update(data);
+    const upUser = await user.findByPk(id);
+    return upUser.update(data);
 }
 
 const createUser = (data) => {
     const createUser = user.build();
 
     createUser.password = bcrypt.hashSync(data.password, 8);
-    createUser.email = data.email;
-    createUser.name = data.email.split('@')[0];
+    createUser.name = data.name;
+    createUser.email = data.email || '';
+    createUser.googleId = data.googleId || '';
 
     return createUser.save();
 };
@@ -55,47 +56,69 @@ const generateToken = (id) => {
     });
 }
 
-const authUser =  async ({email, password }) => {
+const authUserByGoogle = async (data) => {
 
     const findUser = await user.findOne({
-        where: {email}
+        where: {googleId: data.googleId}
     });
 
     if (findUser) {
-        //login
-        const passwordIsValid = bcrypt.compareSync(
-            password,
-            findUser.password
-        );
+        return {
+            user: {id: findUser.id, name: findUser.name},
+            token: await generateToken(findUser.id),
+        };
+    }
 
-        if (!passwordIsValid) {
+    const newUser = await createUser(data);
+    return {
+        user: {id: newUser.id, name: newUser.name},
+        token: await generateToken(newUser.id),
+    };
 
-            return false;
+}
+
+const authUser = async ({name, password}) => {
+    const authUser = async ({email, password}) => {
+
+        const findUser = await user.findOne({
+            where: {email}
+        });
+
+        if (findUser) {
+            if (findUser.googleId) {
+                return false;
+            }
+
+            //login
+            const passwordIsValid = bcrypt.compareSync(
+                password,
+                findUser.password
+            );
+
+            if (!passwordIsValid) {
+                return false;
+            }
+
+            return {
+                user: {id: findUser.id, name: findUser.name},
+                token: await generateToken(findUser.id),
+            };
+
         }
 
+        const newUser = await createUser({email, password});
         return {
-            user: { id: findUser.id,
-                email: findUser.email,
-                name: findUser.name,
-                role: findUser.role,
-                bunned: findUser.bunned,
-                muted: findUser.muted},
-            token : await generateToken(findUser.id),
+            user: {id: newUser.id, name: newUser.name},
+            token: await generateToken(newUser.id),
         };
 
     }
 
-        const newUser = await createUser({email, password });
-        return {
-            user: { id: newUser.id, email: newUser.email, name: newUser.name },
-            token: await generateToken(newUser.id),
-        };
 }
-
-
 module.exports = {
     createUser,
     loginUser,
+    authUserByGoogle,
     authUser,
     getUser,
     getAll,

@@ -1,8 +1,8 @@
 module.exports = {
      secret: "my-secret-key",
      google:{
-          clientID:"216757630496-asjs0cafllgi8hr0bpgjk9e7jj0upkae.apps.googleusercontent.com",
-          clientSecret: "aFpY4-P4rFQWMIrW9dZQeWVW",
+          clientID:"584019000189-2bikvl7c5s002gdl55eaepo88hdjq3bg.apps.googleusercontent.com",
+          clientSecret: "LBkGgRqevAxMBjdVh7DXZ-O_",
      },
      session:{
           cookieKey:"1234567"
