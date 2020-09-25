@@ -9,6 +9,8 @@ const createUser = (data) => {
 
     createUser.password = bcrypt.hashSync(data.password, 8);
     createUser.name = data.name;
+    createUser.email = data.email || '';
+    createUser.googleId = data.googleId || '';
 
     return createUser.save();
 };
@@ -30,6 +32,27 @@ const generateToken = (id) => {
     });
 }
 
+const authUserByGoogle =  async (data) => {
+
+    const findUser = await user.findOne({
+                where: {googleId: data.googleId}
+   });
+
+    if (findUser) {
+        return {
+            user: { id: findUser.id, name: findUser.name},
+            token : await generateToken(findUser.id),
+        };
+    }
+
+    const newUser = await createUser(data);
+    return {
+        user: { id: newUser.id, name: newUser.name},
+        token: await generateToken(newUser.id),
+    };
+
+}
+
 const authUser =  async ({name, password}) => {
 
     const findUser = await user.findOne({
@@ -44,7 +67,6 @@ const authUser =  async ({name, password}) => {
         );
 
         if (!passwordIsValid) {
-
             return false;
         }
 
@@ -67,5 +89,6 @@ const authUser =  async ({name, password}) => {
 module.exports = {
     createUser,
     loginUser,
-    authUser
+    authUser,
+    authUserByGoogle
 }

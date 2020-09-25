@@ -5,81 +5,33 @@ const app = express();
 const dotenv = require('dotenv');
 const fs = require('fs');
 dotenv.config();
-
+const google = require('./middleware/google');
 const authRouter = require('./routes/authRoutes');
 
-const options = {
-    key: fs.readFileSync('./key.pem', 'utf8'),
-    cert: fs.readFileSync('./server.crt', 'utf8')
-};
-
+// const options = {
+//     key: fs.readFileSync('./key.pem', 'utf8'),
+//     cert: fs.readFileSync('./server.crt', 'utf8')
+// };
 // const server = https.createServer(options, app);
-const server = require('https').createServer(options, app);
+
+const server = require('http').createServer(app);
 
 const io = require('socket.io').listen(server);
+const cookieSession = require('cookie-session')
 
-const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const authConfig = require('./config/auth.config');
-const db = require('./models');
-const user = db.user;
-const cookieSession = require("cookie-session");
-const morgan = require("morgan");
 
-app.use(morgan('tiny'));
+
 
 app.use(cors());
 app.use(bodyParser.json());
 
-
-//google-authorization
-passport.use(
-    new GoogleStrategy({
-        clientID: authConfig.google.clientID,
-        clientSecret: authConfig.google.clientSecret,
-        callbackURL: 'https://locahost:3000/auth/google/redirect'
-    }, (accessToken, refreshToken, profile, done) => {
-        console.log('GoogleStrategy', profile);
-
-        user.findOne({
-            where: {googleId: profile.id}
-        }).then((currentUser) => {
-            if (currentUser) {
-                done(null, currentUser);
-            } else {
-                //if not, create a new user
-                new user({
-                    email: profile.emails[0].value,
-                    googleId: profile.id,
-                    name: `${profile.givenName} ${profile.familyName}`,
-                }).save().then((newUser) => {
-                    done(null, newUser);
-                });
-            }
-        })
-    })
-);
-
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-    //findById
-    user.findByPk(id).then(user => {
-        done(null, user);
-    });
-});
-
 app.use(cookieSession({
+
     // milliseconds of a day
     maxAge: 24 * 60 * 60 * 1000,
-    keys: [authConfig.session.cookieKey]
+    keys: ["my-secret-key"]
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
 
 
 // Middle ware registration
@@ -89,23 +41,12 @@ app.get('/', (req, res) => {     // req - all  res -
 
 app.use('/auth', authRouter);
 
-app.post("/auth/google",
-    passport.authenticate('google', {
-        scope: ["profile", "email"]
-    })
-);
+app.post('/auth/google', google);
 
-app.get("/auth/google", passport.authenticate('google', {
-    scope: ["profile", "email"]
-}));
-
-app.get("/auth/google/redirect",passport.authenticate('google'), (req,res) =>{
-    res.send(req.user);
-});
 
 // Listen port
 server.listen(process.env.PORT, () => {
-    console.log(`Example app listening at https://localhost:${process.env.PORT}`);
+    console.log(`Example app listening at http://localhost:${process.env.PORT}`);
 });
 
 // Array with connections
