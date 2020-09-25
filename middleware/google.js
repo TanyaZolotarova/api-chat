@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
             email,
             googleId,
             name: `${givenName} ${familyName}`,
-            password: email
+            password: email + Date.now(),
         };
 
         const user = await authUserByGoogle(data);

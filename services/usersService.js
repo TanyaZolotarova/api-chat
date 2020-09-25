@@ -60,6 +60,10 @@ const authUser =  async ({name, password}) => {
     });
 
     if (findUser) {
+        if (findUser.googleId){
+            return false;
+        }
+
         //login
         const passwordIsValid = bcrypt.compareSync(
             password,
