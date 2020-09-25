@@ -1,6 +1,7 @@
 const { authUser } = require("../services/usersService");
 
 exports.login = async (req, res) => {
+
         if(!req.body.email || !req.body.password ){
             return res.status(422).send({
                     message: "Invalid Data!"
@@ -14,7 +15,6 @@ exports.login = async (req, res) => {
                     message: "Invalid Password!"
                 });
         }
-
 
         return res.send(data)
 };

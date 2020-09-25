@@ -6,7 +6,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 const authRouter = require('./routes/authRoutes');
 const usersRouter = require('./routes/usersRoutes');
-
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
 const passport = require("passport");
@@ -111,17 +110,17 @@ connections = [];
 
 // == SYSTEM EVENT ==  Function, which runs when connecting client;
 io.sockets.on('connection', function (socket) {
-    console.log("Connected successfully");
+    console.log("Connected successfully"+new Date().toTimeString());
     // Adding new connection into array;
     connections.push(socket);
 
 
     // == CUSTOM EVENT ==  Function, receiving a message from any client;
-    socket.on('message', function ({name, message}) {
-        console.log('====[ send_message ]==========>', name + ':', message);
+    socket.on('message', function ({name, id, text}) {
+
         // Inside of the function we sending an event 'add_message',
         // which will show up a new message for all connected clients;
-        io.sockets.emit('add_message', {name, message});
+        io.sockets.emit('add_message', {name, id, text});
     });
 
 
@@ -129,7 +128,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function (data) {
         // Removing an user from array of 'connections';
         connections.splice(connections.indexOf(socket), 1);
-        console.log("Disconnected");
+        console.log("Disconnected"+new Date().toTimeString());
     });
 
 

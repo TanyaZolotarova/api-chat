@@ -1,8 +1,15 @@
-const {getUser, getAll, deleteUser} = require("../services/usersService");
+const {getUser, getAll, deleteUser, updateUser} = require("../services/usersService");
 
 
 exports.logout = async (req, res) => {
+    try{
 
+    } catch(err) {
+        res.status(422).send({
+            message:
+                err.message || "Can't logout."
+        });
+    }
 }
 
 exports.findAll = async (req, res) => {
@@ -12,7 +19,7 @@ exports.findAll = async (req, res) => {
     } catch (err) {
         res.status(422).send({
             message:
-                err.message || "Some error occurred while retrieving users."
+                err.message || "Some error occurred while getting users."
         });
     }
 
@@ -29,83 +36,60 @@ exports.findOne = async (req, res) => {
     } catch (err) {
         res.status(422).send({
             message:
-                err.message || "Some error occurred while retrieving users."
+                err.message || "Some error occurred while getting users."
         });
     }
 
 }
 
-// exports.delete = async (req, res) => {
-//     const id = req.params.id;
-//
-//     try{
-//     const user = await deleteUser(id)
-//         (num => {
-//         if (num === 1) {
-//             res.send({
-//                 message: 'User was deleted successfully!'
-//             })
-//         } else {
-//             res.send({
-//                 message: `Cannot delete User with id=${id}`
-//             })
-//         }
-//     }) catch (err) {
-//         res.status(422).send({
-//               message: `Cannot delete User with id=${id}`
-//         });
-//     }
-// }}
+exports.delete = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const num = await deleteUser(id);
 
-// exports.logout =  (req, res) => {
-//     User.findOne({
-//         where: {
-//             token: req.body.token
-//         }
-//     }).then(user => {
-//
-//         user.update({token: null})
-//             .then((user) =>
-//                 res.status(200).send({user})
-//             )
-//             .catch((err) => res.status(400).send(err));
-//
-//     }).catch(err => res.status(400).send(err))
-// }
+        if (num === 1) {
+            res.send({
+                message: 'User was deleted successfully!'
+            })
+        } else {
+            res.status(404).send({
+                message: `Can't find user with id=${id}`
+            })
+        }
+    }
+    catch (err)
+        {
+        res.status(422).send({
+              message: `Can't delete user with id=${id}`
+        });
+    }
+}
 
-// exports.update = (req, res) => {
-//     const id = +req.params.id;
-//     const {email, name} = req.body;
-//
-//     User.findByPk(id).then( (user) =>
-//         user.update({
-//             email,
-//             name,
-//         }) .then(function (user) {
-//             res.json(user);
-//             res.end();
-//         }).catch(function (err) {
-//             res.status(400).send(err);
-//         })
-//     ).catch( err => {
-//         res.status(400).send('User not found');
-//     })
-//
-// };
-//
-//
-// exports.findById = (req, res) => {
-//     const id = req.params.id;
-//
-//     User.findOne({
-//         where: {
-//             id
-//         },
-//         include: [
-//             'messages'
-//         ],
-//     }).then(function (user) {
-//         res.json(user);
-//         res.end();
-//     })
-// };
+
+exports.update = async (req, res) => {
+    const id = req.params.id;
+    const { role, name, email } = req.body;
+
+    try {
+        const user = await getUser(id);
+        if(!user) {
+            res.status(404).send({
+                message: ` User not found`
+            })
+        }
+
+        const userUpdated = await updateUser(id, {role, name, email});
+
+        console.log(userUpdated);
+        res.json(userUpdated);
+
+    }catch (err) {
+        res.status(422).send({
+            message:
+                err.message || "Some error occurred while getting users."
+        });
+    }
+
+};
+
+

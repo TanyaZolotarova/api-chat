@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-  };
+  }
 
   user.init({
-    email: DataTypes.STRING,
+    name: DataTypes.STRING,
     password: DataTypes.STRING,
     email: DataTypes.STRING,
     googleId: DataTypes.STRING,
@@ -19,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       defaultValue: 'user'
     },
-    googleId: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'user',
