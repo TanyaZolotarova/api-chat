@@ -27,17 +27,18 @@ const updateUser = async (id, data) => {
     return upUser.update(data);
 }
 
-const createUser = (data) => {
-    const createUser = user.build();
+const createUser = async (data) => {
 
-    createUser.password = bcrypt.hashSync(data.password, 8);
-    createUser.name = data.name;
-    createUser.email = data.email || '';
-    createUser.googleId = data.googleId || '';
+        const createUser = await user.build();
 
-    return createUser.save();
+        createUser.password = bcrypt.hashSync(data.password, 8);
+        createUser.name = data.email.split('@')[0] || data.name;
+        createUser.email = data.email || '';
+        createUser.googleId = data.googleId || null;
+
+        return await createUser.save();
+
 };
-
 
 const loginUser = (user) => {
     // const expiresIn = 24 * 60 * 60  // in seconds 24 hours;
@@ -77,8 +78,7 @@ const authUserByGoogle = async (data) => {
 
 }
 
-const authUser = async ({name, password}) => {
-    const authUser = async ({email, password}) => {
+const authUser = async ({email, password}) => {
 
         const findUser = await user.findOne({
             where: {email}
@@ -100,7 +100,7 @@ const authUser = async ({name, password}) => {
             }
 
             return {
-                user: {id: findUser.id, name: findUser.name},
+                user: {id: findUser.id, email: findUser.email},
                 token: await generateToken(findUser.id),
             };
 
@@ -108,13 +108,11 @@ const authUser = async ({name, password}) => {
 
         const newUser = await createUser({email, password});
         return {
-            user: {id: newUser.id, name: newUser.name},
+            user: {id: newUser.id, email: newUser.email, name: newUser.name},
             token: await generateToken(newUser.id),
         };
-
-    }
-
 }
+
 module.exports = {
     createUser,
     loginUser,
