@@ -21,18 +21,6 @@ module.exports = {
         type: Sequelize.STRING
       },
 
-      email: {
-        allowNull: false,
-        unique: true,
-        type: Sequelize.STRING,
-      },
-
-      googleId: {
-        allowNull: true,
-        unique: true,
-        type: Sequelize.STRING,
-      },
-
       role: {
         type: Sequelize.STRING,
         default: 'user'
