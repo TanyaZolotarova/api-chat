@@ -3,16 +3,16 @@
 const {Model} = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class message extends Model {
+    class Message extends Model {
         static associate(models) {
             // define association here
         }
-    };
+    }
 
-    message.init({
+    Message.init({
         message: DataTypes.TEXT,
         userId: DataTypes.INTEGER,
-        chatroom_id: DataTypes.INTEGER,
+        chat_room_id: DataTypes.INTEGER,
         // user_id: {
         //     type: DataTypes.INTEGER,
         //     allowNull: false,
@@ -26,8 +26,9 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'message',
     });
 
-    message.associate = function(models) {
-        message.belongsTo(models.user, {foreignKey: 'userId', as: 'users'})
+    Message.associate = function(models) {
+        Message.belongsTo(models.user, {foreignKey: 'userId', as: 'users'})
     };
-    return message;
+
+    return Message;
 };

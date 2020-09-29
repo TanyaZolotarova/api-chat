@@ -7,14 +7,14 @@ module.exports = {
             {
                 muted: false,
                 bunned: false,
-                chatroom_id: 1,
+                chat_room_id: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
             {
                 muted: true,
                 bunned: true,
-                chatroom_id: 1,
+                chat_room_id: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()
             }

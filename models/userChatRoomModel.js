@@ -3,20 +3,25 @@
 const {Model} = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class user_chat_room extends Model {
+    class UserChatRoom extends Model {
         static associate(models) {
             // define association here
         }
-    };
+    }
 
-    user_chat_room.init({
+    UserChatRoom.init({
         userId: DataTypes.INTEGER,
         muted: DataTypes.BOOLEAN,
         bunned: DataTypes.BOOLEAN,
-        chatroom_id: DataTypes.INTEGER
+        chat_room_id: DataTypes.INTEGER
     }, {
         sequelize,
         modelName: 'user_chat_room',
     });
-    return user_chat_room;
+
+    UserChatRoom.associate = (models) => {
+        UserChatRoom.belongsTo(models.chat_room, {foreignKey: 'chat_room_id', as: 'chat_room'})
+    };
+
+    return UserChatRoom;
 };

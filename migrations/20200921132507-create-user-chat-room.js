@@ -17,7 +17,7 @@ module.exports = {
       bunned: {
         type: Sequelize.BOOLEAN
       },
-      chatroom_id: {
+      chat_room_id: {
         type: Sequelize.INTEGER
       },
       createdAt: {

@@ -1,20 +1,8 @@
-const db = require('../models');
-const user = db.user;
-
-const {secret} = require('../config/auth.config');
-const jwt = require('jsonwebtoken');
-
+const { getUserByToken } = require("../services/usersService");
 
 module.exports = async (req, res, next) => {
-
     try {
-        const token = req.headers.authorization;
-        const decodedToken = jwt.decode(token, secret);
-        const id = decodedToken.id;
-
-        const admin =  await user.findOne({
-            where: {id}
-        })
+        const admin = await getUserByToken(req.headers.authorization);
 
         if (admin.role === 'admin') {
             res.locals.user = admin;
