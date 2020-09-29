@@ -78,7 +78,7 @@ exports.update = async (req, res) => {
 
         const userUpdated = await updateUser(id, {role, name, email});
 
-        console.log(userUpdated);
+        // console.log(userUpdated);
         res.json(userUpdated);
 
     } catch (err) {

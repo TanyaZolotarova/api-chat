@@ -1,43 +1,49 @@
 const bcrypt = require("bcrypt");
-const db = require('../models');
-const user = db.user;
+const User = require('../models').user;
 const jwt = require("jsonwebtoken");
 const config = require('../config/auth.config.js');
+const {secret} = require('../config/auth.config');
 
 const getAll = () => {
-    return user.findAll({
-        attributes: ['email', 'role', 'name']
+    return User.findAll({
+        attributes: ['email', 'role', 'name', 'isBanned']
     });
 }
 
 const getUser = (id) => {
-    return user.findByPk(id, {
-        attributes: ['email', 'role', 'name', 'password']
+    return User.findByPk(id, {
+        attributes: ['id', 'email', 'role', 'name','password', 'isBanned']
     });
 }
 
+const getUserByToken = (token) => {
+    const decoded = jwt.decode(token, secret);
+
+    return (decoded ? getUser(decoded.id) : null);
+};
+
 const deleteUser = (id) => {
-    return user.destroy({where: {id}});
+    return User.destroy({where: {id}});
 }
 
 
 const updateUser = async (id, data) => {
 
-    const upUser = await user.findByPk(id);
+    const upUser = await User.findByPk(id);
     return upUser.update(data);
 }
 
 const createUser = async (data) => {
 
-    const createUser = await user.build();
+    const createUser = await User.build();
     createUser.email = data.email;
     createUser.password = bcrypt.hashSync(data.password, 8);
     createUser.name = data.name || data.email.split('@')[0];
     // createUser.name = data.name;
     createUser.googleId = data.googleId || null;
+        createUser.isBunned = 0;
 
     return await createUser.save();
-
 };
 
 const loginUser = (user) => {
@@ -59,7 +65,7 @@ const generateToken = (id) => {
 
 const authUserByGoogle = async (data) => {
 
-    const findUser = await user.findOne({
+    const findUser = await User.findOne({
         where: {googleId: data.googleId}
     });
 
@@ -80,7 +86,7 @@ const authUserByGoogle = async (data) => {
 
 const authUser = async ({email, password}) => {
 
-    const findUser = await user.findOne({
+    const findUser = await User.findOne({
         where: {email}
     });
 
@@ -108,7 +114,7 @@ const authUser = async ({email, password}) => {
 
     const newUser = await createUser({email, password});
     return {
-        user: {id: newUser.id, email: newUser.email, name: newUser.name},
+        user: {id: newUser.id, email: newUser.email, name: newUser.name, isBanned: newUser.isBanned},
         token: await generateToken(newUser.id),
     };
 }
@@ -125,6 +131,7 @@ module.exports = {
     authUserByGoogle,
     authUser,
     getUser,
+    getUserByToken,
     getAll,
     deleteUser,
     updateUser,

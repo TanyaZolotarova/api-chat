@@ -4,13 +4,13 @@ const {Model} = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
 
-  class user extends Model {
+  class User extends Model {
     static associate(models) {
       // define association here
     }
   }
 
-  user.init({
+  User.init({
     name: DataTypes.STRING,
     password: DataTypes.STRING,
     email: DataTypes.STRING,
@@ -19,14 +19,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       defaultValue: 'user'
     },
+      isBanned: DataTypes.BOOLEAN,
   }, {
     sequelize,
     modelName: 'user',
   });
 
-  user.associate = function(models) {
-    user.hasMany(models.message, { as: 'messages'})
+  User.associate = (models) => {
+    User.hasMany(models.message, { as: 'messages'})
   };
 
-  return user;
+  return User;
 };

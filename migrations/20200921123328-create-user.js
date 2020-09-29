@@ -30,6 +30,9 @@ module.exports = {
         unique: true
       },
 
+      isBanned: {
+        type: Sequelize.BOOLEAN,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
