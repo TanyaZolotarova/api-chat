@@ -92,7 +92,8 @@ exports.update = async (req, res) => {
 
 exports.userProfileFromChat = async (req, res) => {
     const id = req.params.id;
-    const {name, email, password} = req.body.data;
+    console.log(  req.body);
+    const {name, email, password} = req.body;
 
     try {
         const user = await getUser(id);
@@ -104,10 +105,11 @@ exports.userProfileFromChat = async (req, res) => {
 
         let profileUpdated;
 
-        if (password.length > 0) {
+        if (password && password.length > 0) {
             profileUpdated = await updateUserProfile(id, {name, email, password});
         } else {
-            profileUpdated = updateUserProfile(id, {name, email});
+            console.log('dfdfdf');
+            profileUpdated = await updateUserProfile(id, {name, email});
         }
 
        //  if(!password){

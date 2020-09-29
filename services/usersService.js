@@ -121,7 +121,7 @@ const authUser = async ({email, password}) => {
 
 const updateUserProfile = async (id, data) => {
 
-    const upProfile = await user.findByPk(id);
+    const upProfile = await User.findByPk(id);
     return upProfile.update(data);
 }
 
