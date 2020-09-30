@@ -12,7 +12,7 @@ const getAll = () => {
 
 const getUser = (id) => {
     return User.findByPk(id, {
-        attributes: ['id', 'email', 'role', 'name','password', 'isBanned']
+        attributes: ['id', 'email', 'role', 'name', 'password', 'isBanned']
     });
 }
 
@@ -40,7 +40,7 @@ const createUser = async (data) => {
     createUser.password = bcrypt.hashSync(data.password, 8);
     createUser.name = data.name || data.email.split('@')[0];
     createUser.googleId = data.googleId || null;
-        createUser.isBunned = 0;
+    createUser.isBunned = 0;
 
     return await createUser.save();
 };
@@ -119,16 +119,20 @@ const authUser = async ({email, password}) => {
 }
 
 const updateUserProfile = async (id, data) => {
+    let newData = {};
+    if (data.email) {
+        newData.email = data.email;
+    }
+    if (data.name) {
+        newData.name = data.name;
+    }
 
-    if(data.password){
-        data = {
-            ...data,
-            password:  bcrypt.hashSync(data.password, 8)
-        }
+    if (data.password) {
+        newData.password = bcrypt.hashSync(data.password, 8);
     }
 
     const upProfile = await User.findByPk(id);
-    return upProfile.update(data);
+    return upProfile.update(newData);
 }
 
 module.exports = {

@@ -1,6 +1,8 @@
+
+
 const {getChatMessages, addChatMessages, getLastMessage} = require("../services/messagesService");
 const {getChatMembersIDs, getUserChats, getAllChats, getUserChatRoom} = require("../services/chatsService");
-const {getUserByToken, getUser} = require("../services/usersService");
+const {getUserByToken, getUser, updateUserProfile } = require("../services/usersService");
 
 const middleware = async (socket, next) => {
     const user = await getUserByToken(socket.handshake.query.token);
@@ -33,18 +35,18 @@ const onMessage = async function (socket, {message, chatId}) {
     // Inside of the function we sending an event 'add_message',
     // which will show up a new message for all connected clients;
 
-    const {name, id, email } = socket.user;
+    const {name, id, email} = socket.user;
 
     // console.log("socket.user", socket.user );
 
     // const banned =  socket.user.isBanned;
     //
-    if(userChatRoom.bunned) {
+    if (userChatRoom.bunned) {
         console.log("bannedUser", socket.user.name);
         return;
     }
 
-    if (userChatRoom.muted){
+    if (userChatRoom.muted) {
         socket.emit('warning', {message: 'You are muted in this chat'});
         console.log("mutedUser", socket.user.name);
         return;
@@ -70,14 +72,13 @@ const onMessage = async function (socket, {message, chatId}) {
 
     getLastMessage(chatId, id)
         .then(value => {
-            if(!value) {
-                return addChatMessages({message, chatID: chatId, userId: id })
+            if (!value) {
+                return addChatMessages({message, chatID: chatId, userId: id})
             }
             socket.emit('warning', {message: 'Too many requests'});
             return Promise.reject(new Error('CANT SEND'))
         })
-        .then(() =>
-        {
+        .then(() => {
             console.log('SEND TO CHAT MEMBERS');
             return getChatMembersIDs(chatId)
         })
@@ -86,7 +87,7 @@ const onMessage = async function (socket, {message, chatId}) {
                 Object.values(socket.server.sockets.sockets).forEach((sck) => {
                     if (membersIDs.includes(sck.user.id)) {
                         console.log('EMITED');
-                        sck.emit('message', {message, chatId, name, email });
+                        sck.emit('message', {message, chatId, name, email});
                     }
                 });
             }
@@ -117,9 +118,15 @@ const onGetChatHistory = async (socket, {chatId}) => {
 
 const onDisconnect = (socket, data) => {
     // Removing an user from array of 'connections';
-    console.log("Disconnected  " +  new Date().toTimeString());
+    console.log("Disconnected  " + new Date().toTimeString());
     // socket.server.sockets.emit('userOffline', {id});
 };
+
+const onUpdateUserProfile = async (socket, data) => {
+    const {name, email, password} = data;
+    const profileUpdated = await updateUserProfile(socket.user.id, {name, email, password});
+    socket.broadcastStatus.emit('updateUser', {id:socket.user.id, name});
+}
 
 const onConnect = (socket) => {
     console.log("Connected successfully  " + new Date().toTimeString());
@@ -207,8 +214,8 @@ const onConnect = (socket) => {
         });
 
         socket.on('ban', function ({id}) {
-            socket.server.sockets.forEach((sck)=>{
-                if (sck.user.id === id){
+            socket.server.sockets.forEach((sck) => {
+                if (sck.user.id === id) {
                     // save to db before disconnect;
 
                     sck.disconnect();
@@ -218,8 +225,8 @@ const onConnect = (socket) => {
 
 
         socket.on('mute', function ({id}) {
-            socket.server.sockets.forEach((sck)=>{
-                if (sck.user.id === id){
+            socket.server.sockets.forEach((sck) => {
+                if (sck.user.id === id) {
                     // save to db muted status;
                     // updateUser(id, {muted: true});
                     //  sck.user = getUser(id);
@@ -242,8 +249,10 @@ const onConnect = (socket) => {
 
     // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
     socket.on('disconnect', (data) => onDisconnect(socket, data));
-    
+
     socket.on('getChatHistory', (data) => onGetChatHistory(socket, data));
+
+    socket.on('updateUserProfile', (data) => onUpdateUserProfile(socket, data));
 };
 
 module.exports = {
