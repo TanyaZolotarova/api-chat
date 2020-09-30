@@ -11,6 +11,7 @@ const getChatMembersIDs = async (chatID) => {
     return (chatRoomMembers ? chatRoomMembers.map((roomMember) => roomMember.userId) : null);
 };
 
+
 const getUserChats = async (userId) => {
     const userChatRooms = await UserChatRoom.findAll({
         where: {
