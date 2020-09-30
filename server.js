@@ -11,6 +11,7 @@ const db = require('./models');
 const user = db.user;
 const google = require('./middleware/google');
 const authRouter = require('./routes/authRoutes');
+const userRouter = require('./routes/usersRoutes');
 
 // const options = {
 //     key: fs.readFileSync('./key.pem', 'utf8'),
@@ -25,7 +26,7 @@ const cookieSession = require('cookie-session');
 
 const {getChatMessages, addChatMessages} = require("./services/messagesService");
 const {getChatMembersIDs, getUserChats, getAllChats} = require("./services/chatsService");
-const {getUserByToken} = require("./services/usersService");
+const {getUserByToken, getUser} = require("./services/usersService");
 
 
 app.use(cors());
@@ -44,6 +45,7 @@ app.get('/', (req, res) => {     // req - all  res -
 });
 
 app.use('/auth', authRouter);
+app.use('/user', userRouter);
 
 app.post('/auth/google', google);
 
@@ -75,6 +77,11 @@ io.use(async (socket, next) => {
 // == SYSTEM EVENT ==  Function, which runs when connecting client;
 io.sockets.on('connection', function (socket) {
     console.log("Connected successfully  " + new Date().toTimeString());
+
+    getUser(socket.user.id).then(({id, name, email}) => {
+        socket.emit('connected', {id, name, email});
+    })
+
 
     // console.log('User:', socket.user.name);
     // console.log('User.role:', socket.user.role);

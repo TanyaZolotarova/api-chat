@@ -1,10 +1,10 @@
-const {getUser, getAll, deleteUser, updateUser} = require("../services/usersService");
+const {getUser, getAll, deleteUser, updateUser, updateUserProfile} = require("../services/usersService");
 
 
 exports.logout = async (req, res) => {
-    try{
+    try {
 
-    } catch(err) {
+    } catch (err) {
         res.status(422).send({
             message:
                 err.message || "Can't logout."
@@ -56,11 +56,9 @@ exports.delete = async (req, res) => {
                 message: `Can't find user with id=${id}`
             })
         }
-    }
-    catch (err)
-        {
+    } catch (err) {
         res.status(422).send({
-              message: `Can't delete user with id=${id}`
+            message: `Can't delete user with id=${id}`
         });
     }
 }
@@ -68,11 +66,11 @@ exports.delete = async (req, res) => {
 
 exports.update = async (req, res) => {
     const id = req.params.id;
-    const { role, name, email } = req.body;
+    const {role, name, email} = req.body;
 
     try {
         const user = await getUser(id);
-        if(!user) {
+        if (!user) {
             res.status(404).send({
                 message: ` User not found`
             })
@@ -83,7 +81,7 @@ exports.update = async (req, res) => {
         // console.log(userUpdated);
         res.json(userUpdated);
 
-    }catch (err) {
+    } catch (err) {
         res.status(422).send({
             message:
                 err.message || "Some error occurred while getting users."
@@ -91,5 +89,50 @@ exports.update = async (req, res) => {
     }
 
 };
+
+exports.userProfileFromChat = async (req, res) => {
+    const id = req.params.id;
+    console.log(  req.body);
+    const {name, email, password} = req.body;
+
+    try {
+        const user = await getUser(id);
+        if (!user) {
+            res.status(404).send({
+                message: ` User not found`
+            })
+        }
+
+        let profileUpdated;
+
+        if (password && password.length > 0) {
+            profileUpdated = await updateUserProfile(id, {name, email, password});
+        } else {
+            console.log('dfdfdf');
+            profileUpdated = await updateUserProfile(id, {name, email});
+        }
+
+       //  if(!password){
+        // profileUpdated =  updateUserProfile(id, {name, email});
+        //
+        //  } else {
+        //        profileUpdated = await updateUserProfile(id, {name, email, password});
+        //  }
+
+        // const profileUpdated = await updateUserProfile(id, {name, email, password});
+
+        res.json(profileUpdated);
+
+    } catch (err) {
+        res.status(422).send({
+            message:
+                err.message || "Some error occurred while getting users."
+        });
+    }
+
+
+}
+
+
 
 
