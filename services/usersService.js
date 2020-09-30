@@ -34,7 +34,7 @@ const updateUser = async (id, data) => {
 }
 
 const createUser = async (data) => {
-
+    console.log(data)
     const createUser = await User.build();
     createUser.email = data.email;
     createUser.password = bcrypt.hashSync(data.password, 8);
@@ -71,14 +71,14 @@ const authUserByGoogle = async (data) => {
 
     if (findUser) {
         return {
-            user: {id: findUser.id, name: findUser.name, email: findUser.email},
+            user: {id: findUser.id, name: findUser.name, email: findUser.email, googleId: findUser.googleId},
             token: await generateToken(findUser.id),
         };
     }
 
     const newUser = await createUser(data);
     return {
-        user: {id: newUser.id, name: newUser.name, email: newUser.email},
+        user: {id: newUser.id, name: newUser.name, email: newUser.email, googleId: newUser.googleId},
         token: await generateToken(newUser.id),
     };
 
@@ -120,7 +120,14 @@ const authUser = async ({email, password}) => {
 }
 
 const updateUserProfile = async (id, data) => {
-
+    console.log('sdsdsd',data )
+    if(data.password){
+        data = {
+            ...data,
+            password:  bcrypt.hashSync(data.password, 8)
+        }
+    }
+    console.log(data);
     const upProfile = await User.findByPk(id);
     return upProfile.update(data);
 }

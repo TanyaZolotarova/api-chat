@@ -107,8 +107,8 @@ exports.userProfileFromChat = async (req, res) => {
 
         if (password && password.length > 0) {
             profileUpdated = await updateUserProfile(id, {name, email, password});
+
         } else {
-            console.log('dfdfdf');
             profileUpdated = await updateUserProfile(id, {name, email});
         }
 
