@@ -1,26 +1,16 @@
-const jwt = require('jsonwebtoken');
 const express = require('express')
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
 const dotenv = require('dotenv');
-const fs = require('fs');
 dotenv.config();
-const db = require('./models');
-const user = db.user;
 const google = require('./middleware/google');
 const authRouter = require('./routes/authRoutes');
 const userRouter = require('./routes/usersRoutes');
-
-
 const server = require('http').createServer(app);
-
 const io = require('socket.io').listen(server);
+const webSocketController = require('./controllers/webSocketsController');
 const cookieSession = require('cookie-session');
-
-const {getChatMessages, addChatMessages, getLastMessage} = require("./services/messagesService");
-const {getChatMembersIDs, getUserChats, getAllChats, getMuttedUserInChat} = require("./services/chatsService");
-const {getUserByToken, getUser} = require("./services/usersService");
 
 
 app.use(cors());
@@ -43,243 +33,12 @@ app.use('/user', userRouter);
 
 app.post('/auth/google', google);
 
-
 // Listen port
 server.listen(process.env.PORT, () => {
     console.log(`Example app listening at http://localhost:${process.env.PORT}`);
 });
 
-// socket middleware
-io.use(async (socket, next) => {
-    const user = await getUserByToken(socket.handshake.query.token);
-
-    if (!user) {
-        socket.disconnect(true);
-        return next();
-    }
-
-    if (user.isBanned) {
-        socket.disconnect(true);
-        return next();
-    }
-
-    socket.user = user;
-
-    return next();
-});
+io.use(webSocketController.middleware); // socket middleware
 
 // == SYSTEM EVENT ==  Function, which runs when connecting client;
-io.sockets.on('connection', function (socket) {
-    console.log("Connected successfully  " + new Date().toTimeString());
-
-    // TODO: SEND ALL MESSAGES TO ALL CHATS
-
-    getUser(socket.user.id).then(({id, name, email}) => {
-        socket.emit('connected', {id, name, email});
-    })
-
-
-    // console.log('User:', socket.user.name);
-    // console.log('User.role:', socket.user.role);
-    // console.log('User.isBanned:', socket.user.isBanned);
-
-    if (socket.user.role === 'user') {
-        getUserChats(socket.user.id).then((chatsList) => {
-            socket.emit('chatsList', chatsList);
-        })
-     }
-
-
-    // socket.emit('message', {});
-    // io.sockets.clients((err, clients) => {
-    //     if (err) {
-    //         console.error(err);
-    //         return;
-    //     }
-    //
-    //     console.log('CLIENTS', clients);
-    //     console.log(io.sockets.sockets[clients[0]]);
-    // });
-
-    // io.on('connection', async (socket) => {
-    //     const {token} = socket.handshake.query;
-    //     const user = await user.findOne({ token });
-    //     console.log('Connected! User: ' + user && user.name);
-    //
-    //     try {
-    //         jwt.verify(token, 'secret');
-    //     } catch (error) {
-    //         console.log(error);
-    //         socket.disconnect();
-    //         return;
-    //     }
-    //
-        if (user.isBanned){
-            socket.destroy();
-            return;
-        }
-
-    // try {
-    //
-    //     if (!token){
-    //         throw new Error();
-    //         // socket.disconnect(true);
-    //     }
-    //
-    //     const decodedToken = jwt.decode(token, secret);
-    //     const user = getUser(decodedToken.id);
-    //
-    //     if (!user || user.banned){
-    //         // socket.close();
-    //         throw new Error();
-    //     }
-    // }catch (e) {
-    //     socket.disconnect();
-    // }
-    //
-    // socket.user = user;
-
-    // send for all
-    // io.sockets.emit('newOnLineUser', {name, id, text});
-
-    if (socket.user.role === 'admin') {
-        getAllChats().then((chatsList) => {
-            socket.emit('chatsList', chatsList);
-        }
-        )
-
-        socket.on('sendGlobalMessage', function ({text}) {
-            //         // console.log('====[ send_message ]==========>', name +':', id,  text);
-            //         // Inside of the function we sending an event 'add_message',
-            //         // which will show up a new message for all connected clients;
-            const name = socket.user.name;
-            const id = socket.user.id;
-
-            io.sockets.emit('add_message', {name, id, text, chatId: 1});
-        });
-
-        socket.on('ban', function ({id}) {
-            io.sockets.forEach((sck)=>{
-                if (sck.user.id === id){
-                    // save to db before disconnect;
-
-                    sck.disconnect();
-                }
-            });
-        })
-
-
-        socket.on('mute', function ({id}) {
-            io.sockets.forEach((sck)=>{
-                if (sck.user.id === id){
-                    // save to db muted status;
-                    // updateUser(id, {muted: true});
-                    //  sck.user = getUser(id);
-
-                }
-            });
-        });
-    }
-
-    // if (user.role === 'user') {
-    //     socket.emit('userChatLists', []);
-    // }
-
-    // == CUSTOM EVENT ==  Function, receiving a message from any client;
-
-    //for chat story
-    socket.on('enter', async ({chatId}) => {
-        const messages = await getChatMessages(chatId);
-        socket.emit('enter', messages)
-    });
-
-
-    socket.on('message', function ({text, chatId}) {
-        console.log(`MESSAGE RECEIVED FROM ${socket.user.name}`, text, chatId);
-
-        // Inside of the function we sending an event 'add_message',
-        // which will show up a new message for all connected clients;
-
-        const {name, id, email } = socket.user;
-
-        console.log("socket.user", socket.user );
-
-        // const banned =  socket.user.isBanned;
-        //
-        // if(banned) {
-        //     return;
-        // }
-
-        // if (mutedUser){
-        //     console.log("mutedUser", mutedUser)
-        //     return;
-        // }
-
-        //fixme
-
-        // const muted = getMuttedUserInChat({chat_room_id: chatId, userId: id}).then(value => {
-        //     if(value) {
-        //         console.log(value);
-        //     }
-        // }).catch( (err) => {
-        //     console.log(err);
-        // })
-        //
-        // console.log("muted ===========", muted)
-
-        // getChatMessages(chatId).then(() => {
-        //     // console.log("chatId", chatId);
-        // })
-
-
-        // time-check & send only for needed users & send only for needed chat in & add to db
-
-        getLastMessage(chatId, id)
-            .then(value => {
-                if(!value) {
-                    return addChatMessages({text, chat_room_id: chatId, userId: id })
-                }
-                return Promise.reject(new Error ('CANT SEND'))
-            })
-            .then(() =>
-            {
-                console.log('SEND TO CHAT MEMBERS');
-                return getChatMembersIDs(chatId)
-            })
-            .then((membersIDs) => {
-                if (membersIDs && membersIDs.length) {
-                    Object.values(io.sockets.sockets).forEach((sck) => {
-                        if (membersIDs.includes(sck.user.id)) {
-                            console.log('EMITED');
-                            sck.emit('message', {text, chatId, name, email });
-                        }
-                    });
-                }
-            })
-            .catch(err => console.log(err))
-
-        // addChatMessages({text, chatId, id}).then(() => {
-        //     // console.log("text, chatId, id" ,text, chatId, id)
-        // });
-
-        // const ids = [1,2,3,4,5]; // get user ids From db
-        // io.sockets.forEach((sck)=>{
-        //     if (ids.indexOf(sck.user.id) !== -1){
-        //         sck.emit('add_message', {name, id, text, chatId});
-        //     }
-        // });
-
-        // -- or --
-
-        // send for all users (global)
-        // io.sockets.emit('add_message', {name, id, text});
-    });
-
-
-    // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
-    socket.on('disconnect', function (data) {
-        // Removing an user from array of 'connections';
-        console.log("Disconnected  " +  new Date().toTimeString());
-        // io.sockets.emit('userOffline', {id});
-    });
-});
+io.sockets.on('connection', webSocketController.onConnect);
