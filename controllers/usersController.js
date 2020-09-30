@@ -92,7 +92,7 @@ exports.update = async (req, res) => {
 
 exports.userProfileFromChat = async (req, res) => {
     const id = req.params.id;
-    console.log(  req.body);
+
     const {name, email, password} = req.body;
 
     try {
