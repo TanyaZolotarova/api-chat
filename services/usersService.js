@@ -39,7 +39,6 @@ const createUser = async (data) => {
     createUser.email = data.email;
     createUser.password = bcrypt.hashSync(data.password, 8);
     createUser.name = data.name || data.email.split('@')[0];
-    // createUser.name = data.name;
     createUser.googleId = data.googleId || null;
         createUser.isBunned = 0;
 

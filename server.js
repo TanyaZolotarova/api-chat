@@ -1,4 +1,3 @@
-// import * as jwt from "jsonwebtoken";
 const jwt = require('jsonwebtoken');
 const express = require('express')
 const bodyParser = require('body-parser');
@@ -13,19 +12,14 @@ const google = require('./middleware/google');
 const authRouter = require('./routes/authRoutes');
 const userRouter = require('./routes/usersRoutes');
 
-// const options = {
-//     key: fs.readFileSync('./key.pem', 'utf8'),
-//     cert: fs.readFileSync('./server.crt', 'utf8')
-// };
-// const server = https.createServer(options, app);
 
 const server = require('http').createServer(app);
 
 const io = require('socket.io').listen(server);
 const cookieSession = require('cookie-session');
 
-const {getChatMessages, addChatMessages} = require("./services/messagesService");
-const {getChatMembersIDs, getUserChats, getAllChats} = require("./services/chatsService");
+const {getChatMessages, addChatMessages, getLastMessage} = require("./services/messagesService");
+const {getChatMembersIDs, getUserChats, getAllChats, getMuttedUserInChat} = require("./services/chatsService");
 const {getUserByToken, getUser} = require("./services/usersService");
 
 
@@ -77,6 +71,8 @@ io.use(async (socket, next) => {
 // == SYSTEM EVENT ==  Function, which runs when connecting client;
 io.sockets.on('connection', function (socket) {
     console.log("Connected successfully  " + new Date().toTimeString());
+
+    // TODO: SEND ALL MESSAGES TO ALL CHATS
 
     getUser(socket.user.id).then(({id, name, email}) => {
         socket.emit('connected', {id, name, email});
@@ -190,14 +186,21 @@ io.sockets.on('connection', function (socket) {
     // }
 
     // == CUSTOM EVENT ==  Function, receiving a message from any client;
+
+    //for chat story
+    socket.on('enter', async ({chatId}) => {
+        const messages = await getChatMessages(chatId);
+        socket.emit('enter', messages)
+    });
+
+
     socket.on('message', function ({text, chatId}) {
         console.log(`MESSAGE RECEIVED FROM ${socket.user.name}`, text, chatId);
-        // console.log('socket.user ON MESSAGE', socket.user);
+
         // Inside of the function we sending an event 'add_message',
         // which will show up a new message for all connected clients;
 
-        // console.log(socket.user.id);
-        const {name, id, muted, email } = socket.user;
+        const {name, id, email } = socket.user;
 
         console.log("socket.user", socket.user );
 
@@ -207,31 +210,57 @@ io.sockets.on('connection', function (socket) {
         //     return;
         // }
 
-        if (muted){
-            return;
-        }
+        // if (mutedUser){
+        //     console.log("mutedUser", mutedUser)
+        //     return;
+        // }
 
-        // проверить по времени
+        //fixme
+
+        // const muted = getMuttedUserInChat({chat_room_id: chatId, userId: id}).then(value => {
+        //     if(value) {
+        //         console.log(value);
+        //     }
+        // }).catch( (err) => {
+        //     console.log(err);
+        // })
+        //
+        // console.log("muted ===========", muted)
+
+        // getChatMessages(chatId).then(() => {
+        //     // console.log("chatId", chatId);
+        // })
 
 
-        // send only for needed users
-        getChatMembersIDs(chatId).then((membersIDs) => {
-            if (membersIDs && membersIDs.length) {
-                Object.values(io.sockets.sockets).forEach((sck) => {
-                    if (membersIDs.includes(sck.user.id)) {
-                        sck.emit('message', {text, chatId, name, email });
-                    }
-                });
-            }
-        });
+        // time-check & send only for needed users & send only for needed chat in & add to db
 
-        getChatMessages(chatId).then(() => {
-            // console.log("chatId", chatId);
-        })
+        getLastMessage(chatId, id)
+            .then(value => {
+                if(!value) {
+                    return addChatMessages({text, chat_room_id: chatId, userId: id })
+                }
+                return Promise.reject(new Error ('CANT SEND'))
+            })
+            .then(() =>
+            {
+                console.log('SEND TO CHAT MEMBERS');
+                return getChatMembersIDs(chatId)
+            })
+            .then((membersIDs) => {
+                if (membersIDs && membersIDs.length) {
+                    Object.values(io.sockets.sockets).forEach((sck) => {
+                        if (membersIDs.includes(sck.user.id)) {
+                            console.log('EMITED');
+                            sck.emit('message', {text, chatId, name, email });
+                        }
+                    });
+                }
+            })
+            .catch(err => console.log(err))
 
-        addChatMessages({text, chatId, id}).then(() => {
-            // console.log("text, chatId, id" ,text, chatId, id)
-        });
+        // addChatMessages({text, chatId, id}).then(() => {
+        //     // console.log("text, chatId, id" ,text, chatId, id)
+        // });
 
         // const ids = [1,2,3,4,5]; // get user ids From db
         // io.sockets.forEach((sck)=>{
