@@ -1,6 +1,6 @@
 const {getChatMessages, addChatMessages, getLastMessage} = require("../services/messagesService");
-const {getChatMembersIDs, getUserChats, getAllChats, getUserChatRoom} = require("../services/chatsService");
-const {getUserByToken,getAll, getUser, getAllUsers, updateUserProfile} = require("../services/usersService");
+const {getChatMembersIDs, getUserChats, getAllChats, getUserChatRoom, createChat, createChatRoom} = require("../services/chatsService");
+const {getUserByToken, getUser, getAllUsers, updateUserProfile} = require("../services/usersService");
 
 const middleware = async (socket, next) => {
     const user = await getUserByToken(socket.handshake.query.token);
@@ -270,7 +270,7 @@ const onConnect = (socket) => {
     });
 
     socket.on('online-users', function () {
-        getAll().then((users => socket.emit('online-users', users)));
+        getAllUsers().then((users => socket.emit('online-users', users)));
 
     })
 };
