@@ -1,4 +1,4 @@
-const {getUser, getAll, deleteUser, updateUser, updateUserProfile} = require("../services/usersService");
+const {getUser, getAllUsers, deleteUser, updateUser, updateUserProfile} = require("../services/usersService");
 
 
 exports.logout = async (req, res) => {
@@ -14,7 +14,7 @@ exports.logout = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     try {
-        const users = await getAll();
+        const users = await getAllUsers();
         res.json(users);
     } catch (err) {
         res.status(422).send({

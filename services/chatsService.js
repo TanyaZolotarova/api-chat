@@ -1,5 +1,6 @@
 const UserChatRoom = require('../models').user_chat_room;
 const User = require('../models').user;
+const Op = require('../models').Sequelize.Op;
 
 const getChatMembersIDs = async (chatID) => {
 
@@ -16,8 +17,6 @@ const getChatMembersIDs = async (chatID) => {
 
 const getUserChats = async (userId) => {
 
-    // TODO: append users
-
     const userChatRooms = (await UserChatRoom.findAll({
         where: {
             bunned: 0,
@@ -26,7 +25,13 @@ const getUserChats = async (userId) => {
         include: ["chat_room"]
     })).map((userChatRoom) => userChatRoom.chat_room);
 
-    const users = (await User.findAll()).map((user) => {
+    const users = (await User.findAll( {
+        where: {
+            id: {
+                [Op.not]: userId
+            }
+        }
+    })).map((user) => {
         return {
             id: -user.id,
             chat_name: user.name,

@@ -6,7 +6,7 @@ const {secret} = require('../config/auth.config');
 
 const getAll = () => {
     return User.findAll({
-        attributes: ['email', 'role', 'name', 'isBanned']
+        attributes: ['id', 'email', 'role', 'name', 'isBanned']
     });
 }
 
@@ -143,7 +143,7 @@ module.exports = {
     authUser,
     getUser,
     getUserByToken,
-    getAll,
+    getAllUsers: getAll,
     deleteUser,
     updateUser,
     updateUserProfile,
