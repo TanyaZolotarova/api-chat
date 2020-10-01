@@ -1,6 +1,8 @@
+
+
 const {getChatMessages, addChatMessages, getLastMessage} = require("../services/messagesService");
 const {getChatMembersIDs, getUserChats, getAllChats, getUserChatRoom} = require("../services/chatsService");
-const {getUserByToken, getUser} = require("../services/usersService");
+const {getUserByToken, getUser, updateUserProfile } = require("../services/usersService");
 
 const middleware = async (socket, next) => {
     const user = await getUserByToken(socket.handshake.query.token);
@@ -70,7 +72,7 @@ const onMessage = async function (socket, {message, chatId}) {
                 Object.values(socket.server.sockets.sockets).forEach((sck) => {
                     if (membersIDs.includes(sck.user.id)) {
                         console.log('EMITED');
-                        sck.emit('message', {message, chatId, name, email });
+                        sck.emit('message', {message, chatId, name, email});
                     }
                 });
             }
@@ -98,17 +100,43 @@ const onGetChatHistory = async (socket, {chatId}) => {
 
 const onDisconnect = (socket, data) => {
     // Removing an user from array of 'connections';
-    console.log("Disconnected  " +  new Date().toTimeString());
+    console.log("Disconnected  " + new Date().toTimeString());
     // socket.server.sockets.emit('userOffline', {id});
 };
+
+const onUpdateUserProfile = async (socket, data) => {
+    const {name, email, password} = data;
+
+
+    try {
+        const profileUpdated = await updateUserProfile(
+            socket.user.id,
+            !socket.user.googleId ? {name, email, password} : { name }
+            );
+
+        // TODO check
+        socket.broadcast.emit('updateUser', {
+            id:socket.user.id,
+            name: profileUpdated.dataValues.name,
+        });
+
+        socket.emit('updateUser', {
+            id:socket.user.id,
+            name: profileUpdated.dataValues.name,
+            email: profileUpdated.dataValues.email,
+        });
+    } catch (err) {
+        socket.emit('updateUser', {status: false});
+    }
+}
 
 const onConnect = (socket) => {
     console.log("Connected successfully  " + new Date().toTimeString());
 
     // TODO: SEND ALL MESSAGES TO ALL CHATS
 
-    getUser(socket.user.id).then(({id, name, email}) => {
-        socket.emit('connected', {id, name, email});
+    getUser(socket.user.id).then(({id, name, email, googleId}) => {
+        socket.emit('connected', {id, name, email, googleId});
     })
 
 
@@ -184,8 +212,8 @@ const onConnect = (socket) => {
         });
 
         socket.on('ban', function ({id}) {
-            socket.server.sockets.forEach((sck)=>{
-                if (sck.user.id === id){
+            socket.server.sockets.forEach((sck) => {
+                if (sck.user.id === id) {
                     // save to db before disconnect;
 
                     sck.disconnect();
@@ -195,8 +223,8 @@ const onConnect = (socket) => {
 
 
         socket.on('mute', function ({id}) {
-            socket.server.sockets.forEach((sck)=>{
-                if (sck.user.id === id){
+            socket.server.sockets.forEach((sck) => {
+                if (sck.user.id === id) {
                     // save to db muted status;
                     // updateUser(id, {muted: true});
                     //  sck.user = getUser(id);
@@ -219,8 +247,10 @@ const onConnect = (socket) => {
 
     // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
     socket.on('disconnect', (data) => onDisconnect(socket, data));
-    
+
     socket.on('getChatHistory', (data) => onGetChatHistory(socket, data));
+
+    socket.on('updateUserProfile', (data) => onUpdateUserProfile(socket, data));
 };
 
 module.exports = {
