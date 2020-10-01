@@ -12,7 +12,7 @@ const getAll = () => {
 
 const getUser = (id) => {
     return User.findByPk(id, {
-        attributes: ['id', 'email', 'role', 'name','password', 'isBanned']
+        attributes: ['id', 'email', 'role', 'name', 'password', 'isBanned', 'googleId']
     });
 }
 
@@ -34,13 +34,13 @@ const updateUser = async (id, data) => {
 }
 
 const createUser = async (data) => {
-    console.log(data)
+
     const createUser = await User.build();
     createUser.email = data.email;
     createUser.password = bcrypt.hashSync(data.password, 8);
     createUser.name = data.name || data.email.split('@')[0];
     createUser.googleId = data.googleId || null;
-        createUser.isBunned = 0;
+    createUser.isBunned = 0;
 
     return await createUser.save();
 };
@@ -119,16 +119,21 @@ const authUser = async ({email, password}) => {
 }
 
 const updateUserProfile = async (id, data) => {
-    console.log('sdsdsd',data )
-    if(data.password){
-        data = {
-            ...data,
-            password:  bcrypt.hashSync(data.password, 8)
-        }
+    let newData = {};
+    if (data.email) {
+        newData.email = data.email;
     }
-    console.log(data);
-    const upProfile = await User.findByPk(id);
-    return upProfile.update(data);
+    if (data.name) {
+        newData.name = data.name;
+    }
+
+    if (data.password) {
+        newData.password = bcrypt.hashSync(data.password, 8);
+    }
+
+    const user = await User.findByPk(id);
+    return  user.update(newData);
+
 }
 
 module.exports = {
@@ -138,7 +143,7 @@ module.exports = {
     authUser,
     getUser,
     getUserByToken,
-    getAll,
+    getAllUsers: getAll,
     deleteUser,
     updateUser,
     updateUserProfile,

@@ -1,15 +1,27 @@
-const messageChatRoom = require('../models').message;
 const Message = require('../models').message;
 const Op = require('../models').Sequelize.Op;
 
 const getChatMessages = async (chatID) => {
-    const chatRoomMessages = await messageChatRoom.findAll({
+    console.log('getChatMessages', {chatID});
+
+    const conditions = [
+        {chat_room_id: chatID}
+    ];
+
+    if (chatID < 0) { // private chat
+        conditions.push({
+            userId: -chatID,
+            chat_room_id: {
+                [Op.lt]: 0
+            }
+        });
+    }
+
+    return await Message.findAll({
         where: {
-            chat_room_id: chatID,
+            [Op.or]: conditions
         }
     });
-
-    return chatRoomMessages;
 };
 
 const addChatMessages = async (data) => {
@@ -20,7 +32,7 @@ const addChatMessages = async (data) => {
     createMessage.userId = data.userId;
     createMessage.chat_room_id = data.chatID;
 
-    return await createMessage.save();
+    return (await createMessage.save()).get();
 }
 
 
