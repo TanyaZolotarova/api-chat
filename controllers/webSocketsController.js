@@ -124,8 +124,28 @@ const onDisconnect = (socket, data) => {
 
 const onUpdateUserProfile = async (socket, data) => {
     const {name, email, password} = data;
-    const profileUpdated = await updateUserProfile(socket.user.id, {name, email, password});
-    socket.broadcastStatus.emit('updateUser', {id:socket.user.id, name});
+
+
+    try {
+        const profileUpdated = await updateUserProfile(
+            socket.user.id,
+            !socket.user.googleId ? {name, email, password} : { name }
+            );
+
+        // TODO check
+        socket.broadcast.emit('updateUser', {
+            id:socket.user.id,
+            name: profileUpdated.dataValues.name,
+        });
+
+        socket.emit('updateUser', {
+            id:socket.user.id,
+            name: profileUpdated.dataValues.name,
+            email: profileUpdated.dataValues.email,
+        });
+    } catch (err) {
+        socket.emit('updateUser', {status: false});
+    }
 }
 
 const onConnect = (socket) => {
@@ -133,8 +153,8 @@ const onConnect = (socket) => {
 
     // TODO: SEND ALL MESSAGES TO ALL CHATS
 
-    getUser(socket.user.id).then(({id, name, email}) => {
-        socket.emit('connected', {id, name, email});
+    getUser(socket.user.id).then(({id, name, email, googleId}) => {
+        socket.emit('connected', {id, name, email, googleId});
     })
 
 

@@ -12,7 +12,7 @@ const getAll = () => {
 
 const getUser = (id) => {
     return User.findByPk(id, {
-        attributes: ['id', 'email', 'role', 'name', 'password', 'isBanned']
+        attributes: ['id', 'email', 'role', 'name', 'password', 'isBanned', 'googleId']
     });
 }
 
@@ -131,8 +131,9 @@ const updateUserProfile = async (id, data) => {
         newData.password = bcrypt.hashSync(data.password, 8);
     }
 
-    const upProfile = await User.findByPk(id);
-    return upProfile.update(newData);
+    const user = await User.findByPk(id);
+    return  user.update(newData);
+
 }
 
 module.exports = {
