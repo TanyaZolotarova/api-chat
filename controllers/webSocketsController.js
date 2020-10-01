@@ -1,6 +1,6 @@
 const {getChatMessages, addChatMessages, getLastMessage} = require("../services/messagesService");
 const {getChatMembersIDs, getUserChats, getAllChats, getUserChatRoom} = require("../services/chatsService");
-const {getUserByToken, getUser} = require("../services/usersService");
+const {getUserByToken, getUser, getAllUsers} = require("../services/usersService");
 
 const middleware = async (socket, next) => {
     const user = await getUserByToken(socket.handshake.query.token);
@@ -49,33 +49,34 @@ const onMessage = async function (socket, {message, chatId}) {
     const {name, id: userId, email} = socket.user;
 
     // time-check & send only for needed users & send only for needed chat in & add to db
-    getLastMessage(chatId, userId)
-        .then(value => {
-            if(!value) {
-                return addChatMessages({message, chatID: chatId, userId: userId })
-            }
+    try {
+        const userRecentMessage = await getLastMessage(chatId, userId);
+        if (userRecentMessage) {
             socket.emit('warning', {message: 'Too many requests'});
-            return Promise.reject(new Error('CANT SEND'))
-        })
-        .then(() =>
-        {
-            if (chatId > 0) { // group chat
-                return getChatMembersIDs(chatId);
-            } else { // private chat
-                return [userId, -chatId];
-            }
-        })
-        .then((membersIDs) => {
-            if (membersIDs && membersIDs.length) {
-                Object.values(socket.server.sockets.sockets).forEach((sck) => {
-                    if (membersIDs.includes(sck.user.id)) {
-                        console.log('EMITED');
-                        sck.emit('message', {message, chatId, name, email });
-                    }
-                });
-            }
-        })
-        .catch(err => console.log(err))
+            return;
+        }
+
+        const savedMessage = await addChatMessages({message, chatID: chatId, userId: userId});
+
+        const membersIDs = (chatId > 0 ? await getChatMembersIDs(chatId) : [userId, -chatId]);
+
+        if (membersIDs && membersIDs.length) {
+            Object.values(socket.server.sockets.sockets).forEach((sck) => {
+                if (membersIDs.includes(sck.user.id)) {
+                    const sendTo = (chatId > 0 ? chatId : -(membersIDs.filter((id) => id !== sck.user.id)[0]));
+
+                    console.log('EMIT MESSAGE', {sendTo, savedMessage});
+
+                    sck.emit('message', {
+                        ...savedMessage,
+                        chatId: sendTo,
+                    });
+                }
+            });
+        }
+    } catch (err) {
+        console.log(err);
+    }
 
 
     // const ids = [1,2,3,4,5]; // get user ids From db
@@ -95,6 +96,11 @@ const onGetChatHistory = async (socket, {chatId}) => {
     const messages = await getChatMessages(chatId);
     socket.emit('chatHistory', messages);
 };
+
+const onGetUsersList = async (socket, {}) => {
+    const users = await getAllUsers();
+    socket.emit('usersList', users);
+}
 
 const onDisconnect = (socket, data) => {
     // Removing an user from array of 'connections';
@@ -168,7 +174,7 @@ const onConnect = (socket) => {
     // socket.server.sockets.emit('newOnLineUser', {name, id, text});
 
     if (socket.user.role === 'admin') {
-        getAllChats().then((chatsList) => {
+        getAllChats().then((chatsList) => { //todo get users like in getUserChats()
                 socket.emit('chatsList', chatsList);
             }
         )
@@ -221,6 +227,8 @@ const onConnect = (socket) => {
     socket.on('disconnect', (data) => onDisconnect(socket, data));
     
     socket.on('getChatHistory', (data) => onGetChatHistory(socket, data));
+
+    socket.on('getUsersList', (data) => onGetUsersList(socket, data));
 };
 
 module.exports = {
