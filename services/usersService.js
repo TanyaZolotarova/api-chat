@@ -6,7 +6,7 @@ const {secret} = require('../config/auth.config');
 
 const getAll = () => {
     return User.findAll({
-        attributes: ['email', 'role', 'name', 'isBanned']
+        attributes: [ 'id', 'email', 'role', 'name', 'isBanned']
     });
 }
 
@@ -105,7 +105,7 @@ const authUser = async ({email, password}) => {
         }
 
         return {
-            user: {id: findUser.id, email: findUser.email},
+            user: {id: findUser.id, email: findUser.email, name: findUser.name},
             token: await generateToken(findUser.id),
         };
 
