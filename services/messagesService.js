@@ -1,15 +1,14 @@
-const messageChatRoom = require('../models').message;
 const Message = require('../models').message;
 const Op = require('../models').Sequelize.Op;
 
 const getChatMessages = async (chatID) => {
-    const chatRoomMessages = await messageChatRoom.findAll({
+    const messages = await Message.findAll({
         where: {
             chat_room_id: chatID,
         }
     });
 
-    return chatRoomMessages;
+    return messages;
 };
 
 const addChatMessages = async (data) => {
