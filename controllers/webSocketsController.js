@@ -93,7 +93,7 @@ const onMessage = async function (socket, {message, chatId}) {
 };
 
 const onGetChatHistory = async (socket, {chatId}) => {
-    const messages = await getChatMessages(chatId);
+    const messages = await getChatMessages(chatId, socket.user.id);
     socket.emit('chatHistory', messages);
 };
 
