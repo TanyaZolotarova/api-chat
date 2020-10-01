@@ -250,7 +250,7 @@ const onConnect = (socket) => {
         createChat(name, socket.user.id, users.length > 1).then((chatRoom) => {
             console.log(chatRoom)
             createChatRoom(chatRoom.dataValues.id, [socket.user.id, ...users]).then(() => {
-                getAllChats().then((chatsList) => {
+                getUserChats(socket.user.id).then((chatsList) => {
                     socket.emit('chatsList', chatsList);
                 })
             })
