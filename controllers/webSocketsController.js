@@ -1,5 +1,3 @@
-
-
 const {getChatMessages, addChatMessages, getLastMessage} = require("../services/messagesService");
 const {getChatMembersIDs, getUserChats, getAllChats, getUserChatRoom} = require("../services/chatsService");
 const {getUserByToken, getUser, updateUserProfile } = require("../services/usersService");
@@ -28,59 +26,44 @@ const onEnter = async (socket, {chatId}) => {
 };
 
 const onMessage = async function (socket, {message, chatId}) {
-    const userChatRoom = await getUserChatRoom(socket.user.id, chatId);
-
     console.log(`MESSAGE RECEIVED FROM ${socket.user.name}`, message, chatId);
 
-    // Inside of the function we sending an event 'add_message',
-    // which will show up a new message for all connected clients;
+    if (chatId > 0 ) { // group chat
+        const userChatRoom = await getUserChatRoom(socket.user.id, chatId);
 
-    const {name, id, email} = socket.user;
+        if (userChatRoom.bunned) {
+            console.log("bannedUser", socket.user.name);
+            return;
+        }
 
-    // console.log("socket.user", socket.user );
-
-    // const banned =  socket.user.isBanned;
-    //
-    if (userChatRoom.bunned) {
-        console.log("bannedUser", socket.user.name);
-        return;
-    }
-
-    if (userChatRoom.muted) {
-        socket.emit('warning', {message: 'You are muted in this chat'});
-        console.log("mutedUser", socket.user.name);
-        return;
+        if (userChatRoom.muted) {
+            socket.emit('warning', {message: 'You are muted in this chat'});
+            console.log("mutedUser", socket.user.name);
+            return;
+        }
     }
 
     //fixme
 
-    // const muted = getMuttedUserInChat({chat_room_id: 1, userId: 12}).then(value => {
-    //     if(value) {
-    //         console.log(value);
-    //     }
-    // }).catch( (err) => {
-    //     console.log(err);
-    // })
-
-    // console.log("muted ===========", muted)
-
-    // getChatMessages(chatId).then(() => {
-    //     // console.log("chatId", chatId);
-    // })
+    const {name, id: userId, email} = socket.user;
 
     // time-check & send only for needed users & send only for needed chat in & add to db
-
-    getLastMessage(chatId, id)
+    getLastMessage(chatId, userId)
         .then(value => {
             if (!value) {
-                return addChatMessages({message, chatID: chatId, userId: id})
+                return addChatMessages({message, chatID: chatId, userId: userId})
             }
             socket.emit('warning', {message: 'Too many requests'});
             return Promise.reject(new Error('CANT SEND'))
         })
-        .then(() => {
-            console.log('SEND TO CHAT MEMBERS');
-            return getChatMembersIDs(chatId)
+        .then(() =>
+        {
+            if (chatId > 0) { // group chat
+                return getChatMembersIDs(chatId);
+            } else { // private chat
+                return [userId, -chatId];
+            }
+
         })
         .then((membersIDs) => {
             if (membersIDs && membersIDs.length) {
@@ -94,9 +77,6 @@ const onMessage = async function (socket, {message, chatId}) {
         })
         .catch(err => console.log(err))
 
-    // addChatMessages({text, chatId, id}).then(() => {
-    //     // console.log("text, chatId, id" ,text, chatId, id)
-    // });
 
     // const ids = [1,2,3,4,5]; // get user ids From db
     // socket.server.sockets.forEach((sck)=>{
@@ -118,7 +98,7 @@ const onGetChatHistory = async (socket, {chatId}) => {
 
 const onDisconnect = (socket, data) => {
     // Removing an user from array of 'connections';
-    console.log("Disconnected  " + new Date().toTimeString());
+    console.log("Disconnected  " +  new Date().toTimeString());
     // socket.server.sockets.emit('userOffline', {id});
 };
 
@@ -157,10 +137,6 @@ const onConnect = (socket) => {
         socket.emit('connected', {id, name, email, googleId});
     })
 
-
-    // console.log('User:', socket.user.name);
-    // console.log('User.role:', socket.user.role);
-    // console.log('User.isBanned:', socket.user.isBanned);
 
     if (socket.user.role === 'user') {
         getUserChats(socket.user.id).then((chatsList) => {
@@ -234,8 +210,8 @@ const onConnect = (socket) => {
         });
 
         socket.on('ban', function ({id}) {
-            socket.server.sockets.forEach((sck) => {
-                if (sck.user.id === id) {
+            socket.server.sockets.forEach((sck)=>{
+                if (sck.user.id === id){
                     // save to db before disconnect;
 
                     sck.disconnect();
@@ -245,8 +221,8 @@ const onConnect = (socket) => {
 
 
         socket.on('mute', function ({id}) {
-            socket.server.sockets.forEach((sck) => {
-                if (sck.user.id === id) {
+            socket.server.sockets.forEach((sck)=>{
+                if (sck.user.id === id){
                     // save to db muted status;
                     // updateUser(id, {muted: true});
                     //  sck.user = getUser(id);
@@ -269,7 +245,7 @@ const onConnect = (socket) => {
 
     // == SYSTEM EVENT ==  Function, which runs when client disconnected from server;
     socket.on('disconnect', (data) => onDisconnect(socket, data));
-
+    
     socket.on('getChatHistory', (data) => onGetChatHistory(socket, data));
 
     socket.on('updateUserProfile', (data) => onUpdateUserProfile(socket, data));
