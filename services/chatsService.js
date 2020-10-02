@@ -1,4 +1,11 @@
 const UserChatRoom = require('../models').user_chat_room;
+const ChatRoom = require('../models').chat_room;
+
+const createChat = (chatName, userId, isGroup) =>{
+    return ChatRoom.create({ chat_name: chatName, creator_id: userId, is_group_chat: isGroup });
+    // chat.name = data.chat_name;
+    // return chat.save()
+};
 const User = require('../models').user;
 const Op = require('../models').Sequelize.Op;
 
@@ -56,30 +63,24 @@ const getUserChatRoom = (userId, chatId) => {
 
 const getAllChats = async () => {
     const allChatRooms = await UserChatRoom.findAll({
-            include: ["chat_room"]
+            include: ["chat_room"],
+            group: ['chat_room_id']
     });
 
     return (allChatRooms ? allChatRooms.map( (ChatRoom) => ChatRoom.chat_room) : null);
 }
 
-// const getMuttedUserInChat = async (data) => {
-//     const chatRoomMutedMembers = await UserChatRoom.findOne( {
-//         where: {
-//             userId: data.id,
-//             chat_room_id: data.chatID,
-//             muted: 1,
-//     }
-//     })
-//
-//     console.log("chatRoomMutedMembers", chatRoomMutedMembers);
-//
-//     return (chatRoomMutedMembers ? chatRoomMutedMembers.map((chatRoomMutedMember) => chatRoomMutedMember.chat_room) : null);
-// }
+const createChatRoom = (chatRoomId, users) => {
+    console.log('!!!!!!!!!! ', chatRoomId)
+    return Promise.all(users.map(userId => UserChatRoom.create({ chat_room_id: chatRoomId, userId, muted: 0, bunned: 0 })));
+}
 
 module.exports = {
     getChatMembersIDs,
     getUserChats,
     getAllChats,
-    // getMuttedUserInChat,
+    createChat,
+    createChatRoom,
     getUserChatRoom,
 };
+
