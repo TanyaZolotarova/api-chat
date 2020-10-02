@@ -20,6 +20,10 @@ const middleware = async (socket, next) => {
     return next();
 };
 
+const getOnlineUsersIds = (socket) => {
+    return Object.values(socket.server.sockets.sockets).map((sck) => sck.user.id);
+};
+
 const onEnter = async (socket, {chatId}) => {
     const messages = await getChatMessages(chatId);
     socket.emit('enter', messages);
@@ -75,18 +79,6 @@ const onMessage = async function (socket, {message, chatId}) {
         console.log(err);
     }
 
-
-    // const ids = [1,2,3,4,5]; // get user ids From db
-    // socket.server.sockets.forEach((sck)=>{
-    //     if (ids.indexOf(sck.user.id) !== -1){
-    //         sck.emit('add_message', {name, id, text, chatId});
-    //     }
-    // });
-
-    // -- or --
-
-    // send for all users (global)
-    // socket.server.sockets.emit('add_message', {name, id, text});
 };
 
 const onGetChatHistory = async (socket, {chatId}) => {
@@ -100,10 +92,14 @@ const onGetUsersList = async (socket, {}) => {
 }
 
 const onDisconnect = (socket, data) => {
-    // Removing an user from array of 'connections';
-    console.log("Disconnected  " + new Date().toTimeString());
+    const onlineUsersIds = getOnlineUsersIds(socket);
+    console.log('disconnect', {onlineUsersIds});
+    socket.server.sockets.emit('onlineUsersList', onlineUsersIds);
+
+    console.log("Disconnected  ", new Date().toTimeString());
     // socket.server.sockets.emit('userOffline', {id});
 };
+
 
 const onUpdateUserProfile = async (socket, data) => {
     const {name, email, password} = data;
@@ -134,6 +130,10 @@ const onUpdateUserProfile = async (socket, data) => {
 
 const onConnect = (socket) => {
     console.log("Connected successfully  " + new Date().toTimeString());
+
+    socket.server.sockets.emit('onlineUsersList', getOnlineUsersIds(socket));
+
+    console.log("==============NUMBER OF CONNECTIONS==================", Object.keys(socket.server.sockets.connected).length);
 
     // TODO: SEND ALL MESSAGES TO ALL CHATS
 
