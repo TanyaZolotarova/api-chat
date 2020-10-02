@@ -115,7 +115,7 @@ const onUpdateUserProfile = async (socket, data) => {
             );
 
         // TODO check
-        socket.broadcast.emit('updateUser', {
+        socket.emit('updateUser', {
             id:socket.user.id,
             name: profileUpdated.dataValues.name,
         });
