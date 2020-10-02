@@ -6,7 +6,7 @@ const {secret} = require('../config/auth.config');
 
 const getAll = () => {
     return User.findAll({
-        attributes: ['id', 'email', 'role', 'name', 'isBanned']
+        attributes: [ 'id', 'email', 'role', 'name', 'isBanned']
     });
 }
 
