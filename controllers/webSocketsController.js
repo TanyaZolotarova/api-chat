@@ -122,9 +122,10 @@ const onUpdateUserProfile = async (socket, data) => {
         });
 
         socket.emit('updateUser', {
-            id:socket.user.id,
+            id: socket.user.id,
             name: profileUpdated.dataValues.name,
             email: profileUpdated.dataValues.email,
+            googleId: profileUpdated.dataValues.googleId
         });
     } catch (err) {
         socket.emit('updateUser', {status: false});
@@ -146,55 +147,6 @@ const onConnect = (socket) => {
             socket.emit('chatsList', chatsList);
         })
     }
-
-
-    // socket.emit('message', {});
-    // socket.server.sockets.clients((err, clients) => {
-    //     if (err) {
-    //         console.error(err);
-    //         return;
-    //     }
-    //
-    //     console.log('CLIENTS', clients);
-    //     console.log(socket.server.sockets.sockets[clients[0]]);
-    // });
-
-    // socket.server.on('connection', async (socket) => {
-    //     const {token} = socket.handshake.query;
-    //     const user = await user.findOne({ token });
-    //     console.log('Connected! User: ' + user && user.name);
-    //
-    //     try {
-    //         jwt.verify(token, 'secret');
-    //     } catch (error) {
-    //         console.log(error);
-    //         socket.disconnect();
-    //         return;
-    //     }
-
-
-    // try {
-    //
-    //     if (!token){
-    //         throw new Error();
-    //         // socket.disconnect(true);
-    //     }
-    //
-    //     const decodedToken = jwt.decode(token, secret);
-    //     const user = getUser(decodedToken.id);
-    //
-    //     if (!user || user.banned){
-    //         // socket.close();
-    //         throw new Error();
-    //     }
-    // }catch (e) {
-    //     socket.disconnect();
-    // }
-    //
-    // socket.user = user;
-
-    // send for all
-    // socket.server.sockets.emit('newOnLineUser', {name, id, text});
 
     if (socket.user.role === 'admin') {
         getAllChats().then((chatsList) => { //todo get users like in getUserChats()

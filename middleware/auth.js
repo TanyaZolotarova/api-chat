@@ -4,11 +4,6 @@ module.exports = async (req, res, next) => {
     try {
         const userMe = await getUserByToken(req.headers.authorization);
 
-        // if (userMe.attributes.bunned === true) {
-        //     res.status(422).json({
-        //         error: 'You are bunned'
-        //     });
-        // }
 
         if (!userMe) {
             res.status(401).json({
